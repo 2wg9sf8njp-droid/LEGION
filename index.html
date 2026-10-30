@@ -251,7 +251,8 @@ h1{white-space:nowrap}
 
 </head><body>
 <div class="wrap" id="app"></div>
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>window.mqtt||document.write('<script src="https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js"><\/script>')</script>
 
 <script>
 const NAT={
@@ -691,8 +692,33 @@ class MockPeer{
   connect(id){const c=this._conn(id); this.conns[id]=c; this.ch.postMessage({to:id,from:this.id,k:'open'}); return c;}
   destroy(){this.ch.close();}
 }
+// relay over a public MQTT broker: both browsers only talk to the broker, so home routers and phone networks don't block it
+const BROKERS=['wss://broker.hivemq.com:8884/mqtt','wss://broker.emqx.io:8084/mqtt','wss://test.mosquitto.org:8081'];
+const rnd=()=>Math.random().toString(36).slice(2,8);
+class MqttPeer{
+  constructor(id){ this.id=id||('g'+rnd()); this.h={}; this.conns={}; this._connect(0); }
+  topic(t){ return 'legion-game/v1/'+t; }
+  _connect(i){
+    let opened=false;
+    const c=window.mqtt.connect(BROKERS[i],{clientId:'lg_'+this.id+'_'+rnd(),clean:true,reconnectPeriod:2000,connectTimeout:6000,keepalive:30});
+    const fail=setTimeout(()=>{ if(opened) return; try{c.end(true);}catch(e){} if(i+1<BROKERS.length) this._connect(i+1); else (this.h.error||(()=>{}))({type:'network'}); },7000);
+    c.on('connect',()=>{ c.subscribe(this.topic(this.id),{qos:1},()=>{ if(!opened){ opened=true; clearTimeout(fail); (this.h.open||(()=>{}))(this.id); } }); });
+    c.on('message',(t,buf)=>{ let m; try{ m=JSON.parse(typeof buf==='string'?buf:new TextDecoder().decode(buf)); }catch(e){ return; } this._msg(m); });
+    this.c=c;
+  }
+  _msg(m){ const from=m.from;
+    if(m.k==='open'){ const c=this._conn(from); this.conns[from]=c; this._post(from,{k:'ack'}); (this.h.connection||(()=>{}))(c); setTimeout(()=>c._emit('open'),0); }
+    else if(m.k==='ack'){ this.conns[from]&&this.conns[from]._emit('open'); }
+    else if(m.k==='data'){ this.conns[from]&&this.conns[from]._emit('data',m.d); }
+    else if(m.k==='close'){ this.conns[from]&&this.conns[from]._emit('close'); } }
+  _post(to,m){ try{ this.c.publish(this.topic(to),JSON.stringify({...m,from:this.id}),{qos:1}); }catch(e){} }
+  on(k,f){ this.h[k]=f; }
+  _conn(peer){ const self=this, h={}; return {peer,on(k,f){h[k]=f;},_emit(k,d){h[k]&&h[k](d);},send(d){self._post(peer,{k:'data',d});},close(){self._post(peer,{k:'close'});}}; }
+  connect(id){ const c=this._conn(id); this.conns[id]=c; this._post(id,{k:'open'}); return c; }
+  destroy(){ try{ this.c.end(true); }catch(e){} }
+}
 const MOCK=/[?&]mock/.test(location.search);
-const PeerCls=()=>MOCK?MockPeer:(window.Peer||null);
+const PeerCls=()=>MOCK?MockPeer:(window.mqtt?MqttPeer:null);
 function netReset(msg){ try{NET.conn&&NET.conn.close();}catch(e){} try{NET.peer&&NET.peer.destroy();}catch(e){}
   Object.assign(NET,{role:null,peer:null,conn:null,code:'',status:'',pending:null}); NET.err=msg||''; }
 function netSend(m){ try{NET.conn&&NET.conn.send(m);}catch(e){} }
@@ -701,7 +727,7 @@ function netHost(){
   NET.err=''; NET.code=newCode(); NET.role='host'; NET.status='部屋を準備しています…'; render();
   const peer=new P('legion-'+NET.code); NET.peer=peer;
   peer.on('open',()=>{NET.status='相手を待っています'; render();});
-  peer.on('error',e=>{ if(e&&e.type==='unavailable-id'){ netReset(); return netHost(); } netReset('部屋を作れませんでした（'+(e&&e.type||'通信エラー')+'）。少し待ってもう一度試してください。'); render(); });
+  peer.on('error',e=>{ netReset('部屋を作れませんでした。通信できる場所か確認して、もう一度試してください。'); render(); });
   peer.on('connection',conn=>{ if(NET.conn){conn.close();return;} NET.conn=conn;
     conn.on('data',m=>netOnHost(m));
     conn.on('close',()=>netLost());
@@ -713,12 +739,12 @@ function netJoin(code){
   NET.err=''; NET.code=code; NET.role='guest'; NET.status='部屋に入っています…'; render();
   const peer=new P(); NET.peer=peer;
   peer.on('open',()=>{ const conn=peer.connect('legion-'+code,{reliable:true}); NET.conn=conn;
-    const to=setTimeout(()=>{ if(NET.role==='guest'&&!G){ netReset('部屋が見つかりませんでした。合言葉を確かめてください。'); render(); } },12000);
+    const to=setTimeout(()=>{ if(NET.role==='guest'&&!G&&NET.status!=='対戦の開始を待っています'){ netReset('部屋が見つかりませんでした。合言葉が合っているか、部屋を作った人がゲームの画面を開いたままにしているか確かめてください。'); render(); } },15000);
     conn.on('open',()=>{ clearTimeout(to); NET.status='対戦の開始を待っています'; render(); netSend({t:'hello',nats:setup.sel,leader:setup.leader}); });
     conn.on('data',m=>netOnGuest(m));
     conn.on('close',()=>netLost());
   });
-  peer.on('error',e=>{ netReset(e&&e.type==='peer-unavailable'?'部屋が見つかりませんでした。合言葉を確かめてください。':'つながりませんでした（'+(e&&e.type||'通信エラー')+'）。'); render(); });
+  peer.on('error',e=>{ netReset('つながりませんでした。通信できる場所か確認して、もう一度試してください。'); render(); });
 }
 function netLost(){ if(!NET.role) return; const wasGame=!!G; netReset(wasGame?'相手との通信が切れました。':''); if(G){G.over=true; ui.req=null; ui.resolve=null; ui.modal='lost';} render(); }
 function netQuit(){ netSend({t:'bye'}); netReset(); }
