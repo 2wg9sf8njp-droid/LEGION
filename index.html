@@ -170,7 +170,7 @@ h1::before,h1::after{content:"";width:18px;height:18px;background:url("data:imag
 .hc.fit::after{content:"";position:absolute;inset:-3px;border-radius:11px;box-shadow:0 0 0 2px #9fe0a8,0 0 12px rgba(159,224,168,.75);pointer-events:none}
 .hc{touch-action:none;user-select:none;-webkit-user-select:none}
 .ghost{position:fixed;z-index:60;width:76px;aspect-ratio:3/4;border-radius:8px;background:center 0/cover;box-shadow:0 0 0 2px var(--gold),0 10px 24px rgba(0,0,0,.6);pointer-events:none;transform:translate(-50%,-60%) rotate(-4deg)}
-.taken{grid-column:1/-1;display:flex;gap:4px;flex-wrap:wrap;min-height:30px;align-items:center}
+.taken{grid-column:1/-1;display:flex;gap:4px;flex-wrap:wrap;min-height:0;align-items:center}
 .taken .lbl{font-size:.66rem;color:var(--muted);margin-right:2px}
 .tk{width:24px;height:32px;border-radius:4px;background:center/cover;box-shadow:0 0 0 1.5px var(--gold),0 1px 3px rgba(0,0,0,.5);border:none;padding:0;cursor:pointer}
 .st button{background:none;border:none;color:inherit;padding:0;font:inherit;text-decoration:underline dotted;cursor:pointer}
@@ -246,6 +246,26 @@ h1{white-space:nowrap}
 @media (max-width:480px){h1{font-size:1.2rem}.opts button{padding:3px 7px;font-size:.68rem}.exb{min-width:0;flex-basis:100%}}
 
 @media (max-width:480px){.hc .r{font-size:.72rem;padding:3px 3px 4px}.hc .r .kd{font-size:.5rem;padding:0 3px}.tile .st span{font-size:.5rem;padding:0 2px}.mc .th{width:22px}.mc .r{display:none}.tile .ef{display:none}.hand{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.hc .k{display:none}}
+
+.dock{position:sticky;bottom:0;z-index:15;margin:0 calc(-1*max(10px,env(safe-area-inset-left,0px))) ;padding:8px max(10px,env(safe-area-inset-left,0px)) calc(8px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(180deg,rgba(20,26,42,0),rgba(20,26,42,.94) 14px,#141a2a);display:flex;flex-direction:column;gap:6px;border-top:1px solid rgba(217,178,90,.25)}
+.dock .info{position:relative;padding-right:30px;min-height:0}
+.ix{position:absolute;right:6px;top:6px;width:24px;height:24px;padding:0;border-radius:50%;background:rgba(0,0,0,.08);border:none;color:var(--faceMuted);font-size:1rem;line-height:1}
+.handrow{display:flex;gap:6px;align-items:flex-end}
+.handrow .hand{flex:1;min-width:0}
+.hand.mini2{display:flex;gap:6px;overflow-x:auto;padding:6px 2px 2px;scrollbar-width:thin}
+.hsz{flex:none;padding:4px 8px;font-size:.72rem;align-self:center}
+.sc{position:relative;flex:none;width:52px;height:70px;border:none;padding:3px;border-radius:7px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;
+  background:linear-gradient(160deg,var(--c1),var(--c2) 55%,var(--c3));box-shadow:0 2px 5px rgba(0,0,0,.45);transition:transform .12s}
+.sc .sa{position:absolute;inset:3px;border-radius:5px;background:center 8%/cover;opacity:.9}
+.sc .sn{position:absolute;left:3px;bottom:3px;min-width:1.55em;height:1.55em;padding:0 3px;border-radius:999px;display:grid;place-items:center;font-family:var(--f-num);font-weight:800;font-size:1rem;color:#fff;
+  background:var(--c3);box-shadow:0 0 0 2px var(--face),0 1px 3px rgba(0,0,0,.5)}
+.sc .sk{position:absolute;right:3px;top:3px;width:1.25em;height:1.25em;border-radius:4px;display:grid;place-items:center;background:rgba(0,0,0,.45)}
+.sc .sk svg{width:80%;height:80%;color:#fff}
+.sc.sp{box-shadow:0 0 0 2px #d7ab48,0 0 10px rgba(240,200,90,.6)}
+.sc.sp .sn{box-shadow:0 0 0 2px #fff3c4,0 0 0 3.5px #c9a24e}
+.sc.sel{transform:translateY(-6px);box-shadow:0 0 0 3px var(--hi),0 6px 12px rgba(0,0,0,.5)}
+.sc.fit::after{content:"";position:absolute;inset:-3px;border-radius:9px;box-shadow:0 0 0 2px #9fe0a8,0 0 10px rgba(159,224,168,.75);pointer-events:none}
 @media (prefers-reduced-motion:reduce){.hc.sel,.nat:hover{transform:none}}
 </style>
 
@@ -322,7 +342,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 
 const LIVE=typeof window!=='undefined'&&!globalThis.SIM;
-const GAME='レギオン', VER='v0.1.2';
+const GAME='レギオン', VER='v0.1.3';
 let OPT={speed:'normal',diff:'normal',sound:true};
 try{const o=JSON.parse(localStorage.getItem('hk-opt')||'null'); if(o) OPT={...OPT,...o};}catch(e){}
 const saveOpt=()=>{try{localStorage.setItem('hk-opt',JSON.stringify(OPT))}catch(e){}};
@@ -392,8 +412,9 @@ function aiPick(req){
   if(req.skip&&req.minScore!=null&&bs<req.minScore) return null;
   return best;
 }
-const chooseLand=(pi,prompt,cands,score,skip)=>cands.length?ask(pi,{type:'land',prompt,cands,score,skip}):Promise.resolve(null);
-const chooseCard=(pi,prompt,cards,score,skip)=>cards.length?ask(pi,{type:'card',prompt,cards,score,skip}):Promise.resolve(null);
+const BACK={back:1};
+const chooseLand=(pi,prompt,cands,score,skip,back)=>cands.length?ask(pi,{type:'land',prompt,cands,score,skip,back}):Promise.resolve(null);
+const chooseCard=(pi,prompt,cards,score,skip,back)=>cards.length?ask(pi,{type:'card',prompt,cards,score,skip,back}):Promise.resolve(null);
 function resolveReq(v){const r=ui.resolve;ui.req=null;ui.resolve=null;ui.modal=null;render();r&&r(v);}
 
 /* ---------- AI helpers ---------- */
@@ -464,8 +485,9 @@ function swapTop(pi,card,land){
 }
 async function tide(pi){
   const src=G.lands.filter(l=>l.sides[pi].length);
-  const a=await chooseLand(pi,'潮流：動かす自分のカードがある土地',src,null,true); if(!a) return;
-  const b=await chooseLand(pi,'潮流：移す先の土地',G.lands.filter(l=>l!==a&&l.sides[pi].length<3),null,true); if(!b) return;
+  let a,b;
+  for(;;){ a=await chooseLand(pi,'潮流：動かす自分のカードがある土地',src,null,true); if(!a) return;
+    b=await chooseLand(pi,'潮流：移す先の土地',G.lands.filter(l=>l!==a&&l.sides[pi].length<3),null,false,true); if(b===BACK) continue; if(!b) return; break; }
   const c=a.sides[pi].pop(); b.sides[pi].push(c); log(`${G.p[pi].name}：潮流で${cname(c)}を${b.nm}へ`);
   if(b.sides[pi].length===3) draw(pi,1);
   await resolveSide(b,pi);
@@ -559,8 +581,9 @@ async function discardFromHand(pi,n,label){
 async function placeExtra(pi,cands,label,noAbility){
   const P=G.p[pi]; if(!P.hand.length) return null;
   const okLands=cands.filter(l=>alive(l)&&l.sides[pi].length<3); if(!okLands.length) return null;
-  const c=await chooseCard(pi,label+'：置くカード（やめるならスキップ）',P.hand,x=>Math.max(...okLands.map(l=>placeScore(pi,x,l))),true); if(!c) return null;
-  const l=await chooseLand(pi,label+'：置く土地',okLands.filter(x=>alive(x)),x=>placeScore(pi,c,x),false); if(!l) return null;
+  let c,l;
+  for(;;){ c=await chooseCard(pi,label+'：置くカード（やめるならスキップ）',P.hand,x=>Math.max(...okLands.map(l=>placeScore(pi,x,l))),true); if(!c) return null;
+    l=await chooseLand(pi,label+'：置く土地',okLands.filter(x=>alive(x)),x=>placeScore(pi,c,x),false,true); if(l===BACK) continue; if(!l) return null; break; }
   if(noAbility){P.hand=P.hand.filter(x=>x.id!==c.id); c.mark=0; c.wild=(c.nat==='dragon'&&c.num===9); l.sides[pi].push(c); log(`${P.name}：${cname(c)}を${l.nm}に置く（能力なし）`); await resolveSide(l,pi); return c;}
   return playCard(pi,c,l);
 }
@@ -605,10 +628,11 @@ async function onEnter(pi,c,land){
       log(`${tag}：${l.nm}で${cname(a)}と${cname(b)}を入れ替え`);
       await resolveSide(l,pi); await resolveSide(l,o); return;}
     const src=G.lands.filter(l=>l.sides[o].length&&movable(l,o));
-    const a=await chooseLand(pi,'斥候：動かす相手のカードがある土地',src,x=>threat(x,o),true); if(!a) return log(`${tag}：対象なし`);
-    const dst=G.lands.filter(l=>l!==a&&l.sides[o].length<3);
-    const top=a.sides[o][a.sides[o].length-1];
-    const b=await chooseLand(pi,'斥候：移す先の土地',dst,x=>{const s=[...x.sides[o],top]; if(s.length===3) return evalRole(s,o)?-50:6; return possible(s,o)?-s.length:2;},false); if(!b) return;
+    let a,b,top;
+    for(;;){ a=await chooseLand(pi,'斥候：動かす相手のカードがある土地',src,x=>threat(x,o),true); if(!a) return log(`${tag}：対象なし`);
+      const dst=G.lands.filter(l=>l!==a&&l.sides[o].length<3);
+      top=a.sides[o][a.sides[o].length-1];
+      b=await chooseLand(pi,'斥候：移す先の土地',dst,x=>{const s=[...x.sides[o],top]; if(s.length===3) return evalRole(s,o)?-50:6; return possible(s,o)?-s.length:2;},false,true); if(b===BACK) continue; if(!b) return; break; }
     a.sides[o].pop(); b.sides[o].push(top); log(`${tag}：${cname(top)}を${a.nm}から${b.nm}へ`);
     await resolveSide(b,o); return;
   }
@@ -784,8 +808,8 @@ function netAsk(pi,req){ // returns the raw answer value from the guest
   netPushNow();
   let r;
   if(req.type==='place') r={type:'place',tide:req.tide};
-  else if(req.type==='land') r={type:'land',prompt:req.prompt,skip:!!req.skip,cids:req.cands.map(l=>l.id)};
-  else r={type:'card',prompt:req.prompt,skip:!!req.skip,cards:req.cards.map(c=>c.nm?{land:1,...sl(c)}:{...sc(c),_x:c._x?{l:{nm:c._x.l.nm},s:c._x.s===pi?0:1}:undefined})};
+  else if(req.type==='land') r={type:'land',prompt:req.prompt,skip:!!req.skip,back:!!req.back,cids:req.cands.map(l=>l.id)};
+  else r={type:'card',prompt:req.prompt,skip:!!req.skip,back:!!req.back,cards:req.cards.map(c=>c.nm?{land:1,...sl(c)}:{...sc(c),_x:c._x?{l:{nm:c._x.l.nm},s:c._x.s===pi?0:1}:undefined})};
   return new Promise(res=>{ NET.pending={res}; netSend({t:'req',r}); });
 }
 async function remotePlace(pi,tide){
@@ -797,6 +821,7 @@ async function remotePlace(pi,tide){
 }
 async function remoteAsk(pi,req){
   const v=await netAsk(pi,req);
+  if(v==='back'&&req.back) return BACK;
   if(v==null) return req.skip?null:(req.type==='land'?req.cands[0]:req.cards[0]);
   if(req.type==='land') return req.cands.find(l=>l.id===v)||(req.skip?null:req.cands[0]);
   return req.cards[v]||(req.skip?null:req.cards[0]);
@@ -815,9 +840,9 @@ function netOnGuest(m){
     NET.status=''; render(); return; }
   if(m.t==='req'){ const r=m.r; let req;
     if(r.type==='place') req={type:'place',tide:r.tide};
-    else if(r.type==='land') req={type:'land',prompt:r.prompt,skip:r.skip,cids:r.cids,cands:r.cids.map(id=>G.lands.find(l=>l.id===id)).filter(Boolean)};
-    else req={type:'card',prompt:r.prompt,skip:r.skip,cards:r.cards};
-    ui.req=req; ui.resolve=v=>{ let a;
+    else if(r.type==='land') req={type:'land',prompt:r.prompt,skip:r.skip,back:r.back,cids:r.cids,cands:r.cids.map(id=>G.lands.find(l=>l.id===id)).filter(Boolean)};
+    else req={type:'card',prompt:r.prompt,skip:r.skip,back:r.back,cards:r.cards};
+    ui.req=req; ui.resolve=v=>{ let a; if(v===BACK){ netSend({t:'ans',v:'back'}); return; }
       if(req.type==='place') a=v==='tide'?'tide':{cardId:v.card.id,landId:v.land.id,swap:!!v.swap};
       else if(req.type==='land') a=v?v.id:null;
       else a=v==null?null:req.cards.indexOf(v);
@@ -860,6 +885,7 @@ function infoFor(c){return `<span class="ci" style="${cv(c.nat)};background-imag
 const landEff=l=>l.b?esc(l.b):esc(l.e);
 function landInfo(l){return `<span class="ci" style="--c3:#c9962e;background-image:url(${limg(l)})"></span><div class="ib"><div class="in">${l.nm}<span class="swt">${l.pts?'+'+l.pts+'点':'0点'}</span></div>
   <div class="it"><span class="kd wide" style="background:${l.b?'#6b7d3a':'#8a5a9e'}">攻略報酬</span> ${landEff(l)}</div></div>`}
+const smallCard=(c,extra='')=>`<button class="sc ${isSp(c)?'sp':''} ${extra}" style="${cv(c.nat)}" data-hand="${c.id}" aria-label="${NAT[c.nat].n}の${ROLE[c.num-1]} ${c.num}"><span class="sa" style="background-image:url(${cimg(c)})"></span><span class="sn">${c.num}</span><span class="sk">${c.num%2?I1:I3}</span></button>`;
 const handCard=(c,attr,extra='')=>`<button class="hc ${isSp(c)?'sp':''} ${extra}" style="${cv(c.nat)}" ${attr}><span class="in2"><span class="art" style="background-image:url(${cimg(c)})"></span>
   <span class="r">${ROLE[c.num-1]}${kd(c)}</span><span class="k">${NAT[c.nat].n}・${abn(c)}</span></span><span class="n">${c.num}</span></button>`;
 // what number(s) would complete my side of a land
@@ -923,10 +949,11 @@ function render(){
   else if(G.remoteView&&!req&&G.cur===0){pr='…';wt=true;}
   else if(placing) pr=ui.swap?(ui.sel?'入れ替える自分の土地を選ぶ':'入れ替え：手札から出すカードを選ぶ'):(ui.sel?'置く土地を選ぶ（ドラッグでも置けます）':'手札から置くカードを選ぶ（ドラッグでも置けます）');
   else if(req&&(req.type==='land'||req.type==='card')) pr=req.prompt;
-  h+=`<div class="prompt ${wt?'wait':''}" aria-live="polite"><span>${esc(pr)}</span><span class="row">${placing?`<button id="swapBtn">${ui.swap?'置くに戻す':'入れ替え'}</button>`:''}${placing&&req.tide?'<button id="tideBtn">潮流</button>':''}${req&&req.type==='land'&&req.skip?'<button id="skipBtn">スキップ</button>':''}${req&&req.type==='card'?'<button id="openPick">選ぶ</button>':''}</span></div>`;
-  h+=`<div class="info">${ui.info||`<div class="hint">カードや土地をタップすると効果が出ます。長押しで大きく表示。<br><span class="kd e wide">${I1}出陣</span> 奇数：置いた時　<span class="kd c wide">${I3}攻略時</span> 偶数：3枚目で陣形を完成させた時</div>`}</div>`;
   h+=panel(me,0,G.cur===0);
-  h+=`<div class="hand">${me.hand.map(c=>handCard(c,`data-hand="${c.id}"`,[ui.sel&&ui.sel.id===c.id?'sel':'',G.cur===0&&fits(c,0)?'fit':''].join(' '))).join('')}</div>`;
+  h+=`<div class="dock"><div class="prompt ${wt?'wait':''}" aria-live="polite"><span>${esc(pr)}</span><span class="row">${placing?`<button id="swapBtn">${ui.swap?'置くに戻す':'入れ替え'}</button>`:''}${placing&&req.tide?'<button id="tideBtn">潮流</button>':''}${placing&&ui.sel?'<button id="unselBtn">やめる</button>':''}${req&&req.back?'<button id="backBtn">← 戻る</button>':''}${req&&req.type==='land'&&req.skip?'<button id="skipBtn">スキップ</button>':''}${req&&req.type==='card'?'<button id="openPick">選ぶ</button>':''}</span></div>`;
+  if(ui.info) h+=`<div class="info">${ui.info}<button id="infoClose" class="ix" aria-label="閉じる">×</button></div>`;
+  const hcls=c=>[ui.sel&&ui.sel.id===c.id?'sel':'',G.cur===0&&fits(c,0)?'fit':''].join(' ');
+  h+=`<div class="handrow"><div class="${OPT.bigHand?'hand':'hand mini2'}">${me.hand.map(c=>OPT.bigHand?handCard(c,`data-hand="${c.id}"`,hcls(c)):smallCard(c,hcls(c))).join('')}</div><button id="handSize" class="hsz" title="手札の大きさ">${OPT.bigHand?'小':'大'}</button></div></div>`;
   h+=`<details class="log"><summary>${esc(G.log[0]||'')}</summary><div class="ls">${G.log.slice(1,30).map(s=>`<div>${esc(s)}</div>`).join('')}</div></details>`;
   if(ui.pop){const c=ui.pop.c; h+=`<div class="pop" style="${cv(c.nat)}"><span class="pi" style="background-image:url(${cimg(c)})"></span><div><div class="pw">${NAT[c.nat].n}の${ROLE[c.num-1]}　${c.num%2?'出陣効果':'攻略時効果'}${isSp(c)?'　✦国技':''}</div><div class="pn">${abn(c)}</div><div class="pt2">${esc(txt(c))}</div></div></div>`;}
   if(ui.modal==='pick'&&req&&req.type==='card') h+=renderPick(req);
@@ -948,7 +975,7 @@ function renderPick(req){
   return `<div class="ov"><div class="sheet orn" style="position:relative"><h2>${esc(req.prompt)}</h2>
    <div class="hand">${req.cards.map((c,i)=>c.nm?`<button class="hc land2" style="--c1:#f6e6b8;--c2:#d9b25a;--c3:#8a6420" data-picki="${i}"><span class="in2"><span class="art" style="background-image:url(${limg(c)})"></span><span class="r">${esc(c.nm)}</span><span class="k">${c.pts?'+'+c.pts+'点 ':''}${landEff(c)}</span></span></button>`
      :handCard(c,`data-picki="${i}"`).replace('</span></span><span class="n">',`${c._x?'<br>'+esc(c._x.l.nm)+(c._x.s===1?'（相手）':'（自分）'):''}<br><span style="font-family:var(--f-text);font-weight:600">${esc(txt(c))}</span></span></span><span class="n">`)).join('')}</div>
-   <div class="row">${req.skip?'<button id="pickSkip">スキップ</button>':''}<button id="pickHide">盤面を見る</button></div></div></div>`;
+   <div class="row">${req.back?'<button id="backBtn">← 戻る</button>':''}${req.skip?'<button id="pickSkip">スキップ</button>':''}<button id="pickHide">盤面を見る</button></div></div></div>`;
 }
 function renderEnd(){
   const [a,b]=G.p.map(p=>p.score); const w=a>b?'勝利':a<b?'敗北':'引き分け';
@@ -1081,6 +1108,10 @@ document.addEventListener('click',e=>{
   if(t.id==='pickHide'){ui.modal=null;return render();}
   if(t.id==='pickSkip') return resolveReq(null);
   if(t.id==='skipBtn') return resolveReq(null);
+  if(t.id==='backBtn'&&req&&req.back) return resolveReq(BACK);
+  if(t.id==='unselBtn'){ui.sel=null; ui.info=''; return render();}
+  if(t.id==='infoClose'){ui.info=''; return render();}
+  if(t.id==='handSize'){OPT.bigHand=!OPT.bigHand; saveOpt(); return render();}
   if(t.id==='tideBtn'&&req&&req.type==='place'){ui.sel=null;ui.swap=false;return resolveReq('tide');}
   if(t.id==='swapBtn'&&req&&req.type==='place'){ui.swap=!ui.swap;return render();}
   if(t.dataset.picki!=null&&req&&req.type==='card'){const c=req.cards[+t.dataset.picki]; if(c){SFX.pick(); resolveReq(c);} return;}
