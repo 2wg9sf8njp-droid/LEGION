@@ -1,0 +1,218 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>レギオン カード一覧</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@500;700&family=Cinzel:wght@600;800&family=Klee+One:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#e7e9e3; --panel:#d9ddd4; --ink:#1d2a23; --muted:#5b6b61; --line:#b3bdb2;
+  --face:#f8f4ea; --faceInk:#2a241a; --faceMuted:#6c6250;
+  --f-disp:"Kaisei Decol","Hiragino Mincho ProN",serif; --f-num:"Cinzel",serif; --f-text:"Klee One","Hiragino Sans",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141b17;--panel:#1e2922;--ink:#e6ece7;--muted:#9db0a3;--line:#33463a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141b17;--panel:#1e2922;--ink:#e6ece7;--muted:#9db0a3;--line:#33463a;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);padding:16px}
+.wrap{max-width:1100px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-family:var(--f-disp);font-weight:700;font-size:1.6rem;margin:0;letter-spacing:.06em}
+.sub{color:var(--muted);font-size:.85rem;margin-top:2px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 16px}
+.tab{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;display:flex;gap:6px;align-items:center}
+.tab .dot{width:9px;height:9px;border-radius:50%}
+.tab[aria-pressed="true"]{border-color:var(--ink);font-weight:700}
+.tab .cnt{color:var(--muted);font-size:.75rem}
+.natinfo{background:var(--panel);border-radius:10px;padding:10px 12px;font-size:.88rem;margin-bottom:14px;line-height:1.6}
+.natinfo b{font-family:var(--f-disp)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}
+
+/* ---- card ---- */
+.card{--c:#3f7fa6;--c1:#cfe6f2;--c2:#8fc1dc;--c3:#3f7fa6;position:relative;aspect-ratio:63/88;border-radius:12px;padding:7px;isolation:isolate;
+  background:
+    radial-gradient(120% 60% at 15% 8%,color-mix(in srgb,var(--c1) 90%,#fff) 0,transparent 55%),
+    radial-gradient(90% 50% at 90% 95%,color-mix(in srgb,var(--c2) 85%,var(--c3)) 0,transparent 60%),
+    radial-gradient(70% 40% at 85% 30%,var(--c1) 0,transparent 70%),
+    linear-gradient(160deg,var(--c1),var(--c2) 55%,color-mix(in srgb,var(--c2) 70%,var(--c3)));
+  box-shadow:0 2px 6px rgba(0,0,0,.18),0 8px 20px rgba(0,0,0,.10),inset 0 0 0 1px color-mix(in srgb,var(--c3) 45%,transparent),inset 0 0 14px color-mix(in srgb,var(--c3) 30%,transparent);
+  display:flex;flex-direction:column;cursor:pointer;border:none;font:inherit;text-align:left;width:100%;transition:transform .15s}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;opacity:.35;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+.card::after{content:"";position:absolute;inset:3px;border-radius:10px;pointer-events:none;border:1px solid color-mix(in srgb,#fff 55%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c3) 25%,transparent)}
+.card:hover{transform:translateY(-3px)}
+.card:focus-visible{outline:3px solid #2f6fb0;outline-offset:3px}
+.inner{flex:1;border-radius:7px;background:color-mix(in srgb,var(--face) 86%,var(--c1));display:flex;flex-direction:column;overflow:hidden;position:relative;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--c3) 55%,transparent)}
+.art{position:relative;flex:0 0 63%;overflow:hidden;border-bottom:2px solid color-mix(in srgb,var(--c2) 70%,var(--c3))}
+.art img{width:100%;height:100%;object-fit:cover;object-position:50% 0%;display:block}
+.art .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--faceMuted);font-size:.8rem;background:repeating-linear-gradient(45deg,#eee6d4 0 10px,#f4eee0 10px 20px)}
+.num{position:absolute;left:4px;top:4px;width:1.8em;height:1.8em;border-radius:50%;color:var(--numInk,#fff);
+  background:radial-gradient(circle at 35% 30%,var(--c2),var(--c3) 75%);text-shadow:0 1px 2px rgba(0,0,0,.35);
+  font-family:var(--f-num);font-weight:800;font-size:1.15rem;display:grid;place-items:center;
+  box-shadow:0 0 0 2px var(--face),0 1px 4px rgba(0,0,0,.35);line-height:1}
+.emb{position:absolute;right:5px;bottom:5px;width:2em;height:2em;font-size:1rem;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,var(--c1),var(--c2) 70%);box-shadow:0 0 0 2px var(--face),0 0 0 3px var(--c3),0 2px 5px rgba(0,0,0,.35)}
+.emb svg{width:62%;height:62%;fill:var(--c3);stroke:var(--c3);stroke-linejoin:round;stroke-linecap:round}
+.natinfo .emb{position:static;display:inline-grid;vertical-align:middle;margin-right:6px;font-size:.8rem}
+.body{flex:1;display:flex;flex-direction:column;padding:6px 8px 7px;gap:4px;color:var(--faceInk);min-height:0}
+.name{font-family:var(--f-disp);font-weight:700;font-size:1.08rem;color:color-mix(in srgb,var(--c3) 45%,var(--faceInk));letter-spacing:.04em;display:flex;justify-content:space-between;align-items:baseline;gap:4px}
+.kind{font-family:var(--f-body);font-size:.62rem;font-weight:700;color:#fff;border-radius:3px;padding:1px 5px;white-space:nowrap}
+.kind.enter{background:#2f6fb0}.kind.comp{background:#9a5a16}
+.kind{display:inline-grid;place-items:center;width:1.6em;height:1.6em;padding:0!important}.kind svg{width:80%;height:80%;color:#fff}
+.ab .abn{font-family:var(--f-disp);color:var(--c3);margin-right:5px}.card.sp .ab .abn{color:#8a6420}
+.ab{font-family:var(--f-text);font-weight:600;font-size:.78rem;line-height:1.5;flex:1;border-top:1px solid color-mix(in srgb,var(--c2) 50%,transparent);padding-top:4px}
+.ab.l{font-size:.7rem;line-height:1.4}.ab.xl{font-size:.62rem;line-height:1.35}.ov .ab.l{font-size:.95rem}.ov .ab.xl{font-size:.85rem}
+.ab .sw{display:inline-block;font-family:var(--f-body);font-size:.58rem;color:var(--c3);border:1px solid var(--c3);border-radius:3px;padding:0 3px;margin-right:3px;vertical-align:1px;font-weight:700}
+.foot{font-family:var(--f-disp);font-size:.58rem;color:var(--faceMuted);display:flex;justify-content:space-between}
+
+/* zoom */
+.ov{position:fixed;inset:0;background:rgba(8,12,10,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.ov .card{width:min(380px,88vw);cursor:default;font-size:1.25rem}
+.ov .card:hover{transform:none}
+.ov .num{font-size:1.5rem}
+.ov .name{font-size:1.5rem}.ov .ab{font-size:1.05rem;line-height:1.6}.ov .kind{font-size:.8rem}.ov .foot{font-size:.72rem}.ov .emb{font-size:1.5rem}.ov .ab .sw{font-size:.72rem}
+.close{position:fixed;top:12px;right:12px;font:inherit;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+
+/* ---- land card: full-bleed art, no frame, info box at lower center ---- */
+.lcard{position:relative;aspect-ratio:63/88;border-radius:12px;overflow:hidden;border:none;padding:0;cursor:pointer;width:100%;font:inherit;text-align:left;
+  background:linear-gradient(180deg,#bcd3e6 0,#e3ebe9 45%,#c9c3a4 70%,#9e9474 100%);
+  box-shadow:0 2px 6px rgba(0,0,0,.18),0 8px 20px rgba(0,0,0,.10);transition:transform .15s}
+.lcard:hover{transform:translateY(-3px)}
+.lcard:focus-visible{outline:3px solid #2f6fb0;outline-offset:3px}
+.lcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.lcard .ph{position:absolute;left:0;right:0;top:30%;text-align:center;color:#5d5a48;font-size:.8rem}
+.lcard .lbox{position:absolute;left:8%;right:8%;bottom:6%;min-height:27%;border-radius:8px;padding:6px 9px 7px;
+  background:color-mix(in srgb,#f8f4ea 88%,transparent);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+  box-shadow:0 2px 8px rgba(0,0,0,.25),inset 0 0 0 1px rgba(120,100,60,.35);color:var(--faceInk);display:flex;flex-direction:column;gap:3px}
+.lbox .lname{font-family:var(--f-disp);font-weight:700;font-size:1.08rem;display:flex;justify-content:space-between;align-items:center;gap:4px;letter-spacing:.05em}
+.lbox .pts{font-family:var(--f-num);font-weight:800;font-size:.8rem;color:#fff;background:radial-gradient(circle at 35% 30%,#c9a24e,#8a6420 75%);border-radius:999px;padding:1px 8px;text-shadow:0 1px 2px rgba(0,0,0,.3);white-space:nowrap}
+.lbox .pts.zero{background:#9b9482}
+.lbox .lef{font-family:var(--f-text);font-weight:600;font-size:.76rem;line-height:1.45;border-top:1px solid rgba(120,100,60,.3);padding-top:3px}
+.lbox .tag{display:inline-block;font-family:var(--f-body);font-size:.58rem;font-weight:700;color:#fff;border-radius:3px;padding:0 4px;margin-right:3px;vertical-align:1px}
+.tag.bonus{background:#6b7d3a}.tag.gain{background:#8a5a9e}
+.ov .lcard{width:min(380px,88vw);cursor:default}.ov .lcard:hover{transform:none}
+.ov .lbox .lname{font-size:1.5rem}.ov .lbox .lef{font-size:1.05rem}.ov .lbox .pts{font-size:1.05rem}.ov .lbox .tag{font-size:.72rem}
+
+/* ---- nation-unique cards ---- */
+.card.sp{box-shadow:0 0 0 2px #d7ab48,0 0 0 3px #7a5618,0 0 16px 2px rgba(240,200,90,.55),0 8px 20px rgba(0,0,0,.12),inset 0 0 14px rgba(240,200,90,.5)}
+.card.sp .inner{box-shadow:0 0 0 1.5px #c9a24e}
+.card.sp .art{border-bottom-color:#c9a24e}
+.card.sp::after{border-color:#f0d27c;box-shadow:inset 0 0 0 1px rgba(138,100,32,.55),0 0 8px rgba(240,200,90,.55)}
+.card.sp .num{box-shadow:0 0 0 2px #fff3c4,0 0 0 5px #d7ab48,0 0 0 6px #7a5618,0 0 14px 5px rgba(246,210,100,.85);left:8px;top:8px}
+.card.sp .num::after{content:"✦";position:absolute;right:-.2em;bottom:-.25em;font-size:.55em;color:#f6dc8c;text-shadow:0 0 4px rgba(122,86,24,.9),0 1px 1px #5a3e0c}
+.card.sp .ab{background:linear-gradient(180deg,rgba(246,220,140,.35),rgba(246,220,140,.08));border-top:1px solid #d9b45a;border-radius:0 0 5px 5px;margin:0 -4px;padding:4px 4px 0}
+.ab .sw{display:inline-block;font-family:var(--f-body);font-size:.58rem;font-weight:700;color:#3a2a08;border:none;border-radius:3px;padding:0 5px;margin-right:4px;vertical-align:1px;
+  background:linear-gradient(180deg,#fbe8a6,#d7ab48 60%,#b98a2c);box-shadow:0 0 0 1px #8a6420,0 1px 3px rgba(122,86,24,.4)}
+.spchip{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:1px 9px;border-radius:999px;font-size:.8rem;font-weight:700;color:#3a2a08;
+  background:linear-gradient(180deg,#fbe8a6,#d7ab48);box-shadow:0 0 0 1px #8a6420}
+.tab .sps{font-size:.68rem;color:#a07a24;font-weight:700}
+.legend{color:var(--muted);font-size:.78rem;margin-top:14px;line-height:1.6}
+@media (max-width:480px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.name{font-size:.9rem}.ab{font-size:.68rem}}
+</style></head>
+<body><div class="wrap">
+<header><div><p style="margin:0 0 4px"><a href="./" style="color:inherit;font-size:.85rem">← ゲームに戻る</a></p><h1>レギオン カード一覧</h1><div class="sub">レギオンの全カード。カードをタップすると大きく表示します。</div></div></header>
+<div class="tabs" id="tabs"></div>
+<div class="natinfo" id="natinfo"></div>
+<div class="grid" id="grid"></div>
+<div class="legend"><span class="kind enter" id="lgI1"></span> 出陣効果：奇数。置いた時に発動　<span class="kind comp" id="lgI3"></span> 攻略時効果：偶数。3枚目として置いて陣形を完成させた時に発動　金に光るカードはその国だけの国技。</div>
+</div>
+<div id="zoom"></div>
+<script>
+const NAT={
+  human:{n:'人',c1:'#d4ebf6',c2:'#93c6e0',c3:'#3d7ea6',trait:'3か国バラバラの列陣も2点'},
+  elf:{n:'エルフ',c1:'#dcebc9',c2:'#94c07c',c3:'#3c7a45',trait:'1つ飛ばしの列陣（2-4-6など）も陣形になる（森の列陣）'},
+  dwarf:{n:'ドワーフ',c1:'#f8dfbd',c2:'#e7a866',c3:'#b0602a',trait:'自分のカードは相手の効果で動かされない'},
+  dragon:{n:'ドラゴニュート',c1:'#f4cdc2',c2:'#d97a66',c3:'#9a3226',trait:'同陣が4点'},
+  mermaid:{n:'人魚',c1:'#c9d8f2',c2:'#7495d2',c3:'#2c4c92',trait:'毎ターン1回、自分の一番上を別の土地へ移せる（潮流）。移して陣形が完成したら1枚引く'},
+  fairy:{n:'フェアリー',c1:'#f9dce8',c2:'#eca6c4',c3:'#b65a88',trait:'フェアリーのカードを置いたターン、場の一番上1枚に花の印を付けられる'},
+  beast:{n:'獣人',c1:'#ffffff',c2:'#e4e7ec',c3:'#8c95a5',trait:'同じ国のカードの上に重ねると1枚引く'},
+  demon:{n:'魔族',c1:'#e2d5f0',c2:'#a184cc',c3:'#5a388e',trait:'墓地が8枚以上なら陣形の得点+1。自分の呪いは得点を0にする'},
+};
+for(const k in NAT) NAT[k].c=NAT[k].c3;
+const vars=N=>`--c:${N.c3};--c1:${N.c1};--c2:${N.c2};--c3:${N.c3}`;
+const LANDS=[
+  {nm:'王都',pts:2,b:'同陣なら+2点',bf:(r,cs)=>r.kind==='same'?2:0},
+  {nm:'深き森',pts:1,b:'同国3枚なら+2点',bf:(r,cs)=>cs.every(c=>c.nat===cs[0].nat)?2:0},
+  {nm:'竜の巣',pts:2,b:'9か10を含めば+2点',bf:(r,cs)=>r.vals.some(v=>v>=9)?2:0},
+  {nm:'鉱山',pts:1,b:'1〜3だけなら+2点',bf:(r,cs)=>r.vals.every(v=>v<=3)?2:0},
+  {nm:'丘陵',pts:0,b:'列陣なら+1点',bf:(r,cs)=>r.kind==='run'?1:0},
+  {nm:'戦場跡',pts:0,b:'相手側に2枚以上で+2点',bf:(r,cs,l,si)=>l.sides[1-si].length>=2?2:0},
+  {nm:'港町',pts:1,ef:'search',e:'山札の上5枚から1枚を手札に'},
+  {nm:'宿場',pts:0,ef:'mulligan',e:'手札を3枚まで引き直す'},
+  {nm:'古神殿',pts:0,ef:'recover',e:'墓地から1枚手札に戻す'},
+  {nm:'市場',pts:0,ef:'trade',e:'相手と手札を1枚交換'},
+  {nm:'見張り塔',pts:0,ef:'watch',e:'次に出る土地を3枚から選ぶ'},
+  {nm:'進軍路',pts:0,ef:'march',e:'次のターン2枚置ける'}];
+const EMB={
+ human:'<svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z" fill="none" stroke-width="2"/><path d="M12 6v11M7.5 10.5h9" fill="none" stroke-width="2"/></svg>',
+ elf:'<svg viewBox="0 0 24 24"><path d="M20 3C9 3 4 9 4 15c0 2 .6 3.6 1.4 5C8 13 12 10 16 8c-4 3-7 6-9.4 12.6C8 21.5 9.6 22 11 22c6 0 10-6 9-19z"/></svg>',
+ dwarf:'<svg viewBox="0 0 24 24"><path d="M11 3h2v19h-2z"/><path d="M13 4c4 0 7 2 8 6-2-1-5-1-8 1zM11 4C7 4 4 6 3 10c2-1 5-1 8 1z"/></svg>',
+ dragon:'<svg viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z"/></svg>',
+ mermaid:'<svg viewBox="0 0 24 24"><path d="M2 15c2.5-3 5-3 7.5 0s5 3 7.5 0 3.5-2 5-1M2 20c2.5-3 5-3 7.5 0s5 3 7.5 0 3.5-2 5-1" fill="none" stroke-width="2"/><path d="M12 2v9M8 4v4c0 2 2 3 4 3s4-1 4-3V4" fill="none" stroke-width="2"/></svg>',
+ fairy:'<svg viewBox="0 0 24 24"><g><ellipse cx="12" cy="6.5" rx="3.2" ry="4.5"/><ellipse cx="12" cy="6.5" rx="3.2" ry="4.5" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.5" rx="3.2" ry="4.5" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.5" rx="3.2" ry="4.5" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.5" rx="3.2" ry="4.5" transform="rotate(288 12 12)"/></g><circle cx="12" cy="12" r="2.4" fill="#fff"/></svg>',
+ beast:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="16.5" rx="5" ry="4.2"/><ellipse cx="5" cy="10.5" rx="2.2" ry="2.8"/><ellipse cx="19" cy="10.5" rx="2.2" ry="2.8"/><ellipse cx="9" cy="5.5" rx="2.2" ry="2.9"/><ellipse cx="15" cy="5.5" rx="2.2" ry="2.9"/></svg>',
+ demon:'<svg viewBox="0 0 24 24"><path d="M4 2c0 5 2 7 5 8M20 2c0 5-2 7-5 8" fill="none" stroke-width="2"/><path d="M2 15c3-4 7-5 10-5s7 1 10 5c-3 4-7 5-10 5s-7-1-10-5z"/><circle cx="12" cy="15" r="3" fill="#c0283a" stroke="none"/><path d="M12 12.6v4.8" stroke="#1a0f22" stroke-width="1.4"/></svg>',
+};
+const ROLE=['民','兵士','斥候','商人','騎士','魔術師','聖職者','賢者','将軍','王'];
+const BASE={1:'1枚引く',2:'この陣形の得点+1',3:'相手の一番上を別の土地へ動かす',4:'2枚引いて1枚捨てる',5:'同じ土地の相手の一番上を相手の手札に押し返す',6:'相手の土地1つの一番上を墓地に送る',7:'墓地から1枚手札に戻す',8:'相手の手札を見て1枚墓地に送らせる',9:'もう1枚、別の土地に置ける',10:'この土地の得点を2倍にする'};
+const SWAP={
+  human:{4:'山札の上5枚から、この陣形に使っていない国のカードを1枚手札に加える',10:'この陣形が3か国バラバラなら得点3倍（そうでなければ2倍）'},
+  elf:{3:'山札の上3枚を見て1枚を手札に加え、残りは山札の上に戻す',6:'手札から1枚を、自分の別の土地に置く（出陣効果は発動しない）'},
+  dwarf:{2:'このカードの下にある偶数のカードの攻略時効果も発動する',5:'この土地に「鍛え」を置く。2枚でターンを迎えるたび+1（最大3）。攻略時、鍛えの数だけ得点+'},
+  dragon:{9:'この土地では、このカードを7〜10の好きな数字として扱う',10:'得点2倍の代わりに、相手の土地1つの相手側を丸ごと墓地に送る'},
+  mermaid:{3:'同じ土地で自分と相手の一番上を入れ替える',7:'自分の土地の一番上のカード1枚を手札に戻す'},
+  fairy:{1:'場の一番上のカード1枚に「花の印」を付ける（数字+1、10は1になる）',8:'印の付いた相手のカードを、すべて相手の手札に押し返す'},
+  beast:{1:'この土地の自分側に他の獣人がいれば、もう1枚この土地に置ける',9:'もう1枚、別の土地に置ける。置いたのが獣人なら、さらに1枚置ける'},
+  demon:{1:'自分の土地の一番上のカード1枚を墓地に送り、その出陣効果を発動する',7:'相手の土地1つに「呪い」を置く。相手がそこを攻略すると得点が半分（切り捨て）'},
+};
+const ABN={1:'補給',2:'鼓舞',3:'撹乱',4:'調達',5:'押し返し',6:'魔弾',7:'祈り',8:'看破',9:'進軍',10:'王命'};
+const SABN={human:{4:'交易',10:'同盟の王'},elf:{3:'先読み',6:'芽吹き'},dwarf:{2:'重ね打ち',5:'鍛造'},dragon:{9:'竜化',10:'業火'},
+  mermaid:{3:'渦潮',7:'還流'},fairy:{1:'花の印',8:'妖精のいたずら'},beast:{1:'群れ呼び',9:'狩りの号令'},demon:{1:'生贄',7:'呪縛'}};
+const abn=c=>(SABN[c.nat]&&SABN[c.nat][c.num])||ABN[c.num];
+const I1='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4.5" y="2" width="7" height="12" rx="1.3" fill="currentColor"/></svg>';
+const I3='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="5.4" height="9" rx="1" fill="currentColor" opacity=".55" transform="rotate(-12 3.7 8.5)"/><rect x="9.6" y="4" width="5.4" height="9" rx="1" fill="currentColor" opacity=".55" transform="rotate(12 12.3 8.5)"/><rect x="5.3" y="2.5" width="5.4" height="10" rx="1" fill="currentColor"/></svg>';
+// イラストが届いた国だけ登録していく
+const ART={human:10,elf:10,dwarf:10,dragon:10,mermaid:10,fairy:10,beast:10,demon:10,land:12};
+const pad=n=>String(n).padStart(2,'0');
+let cur='human';
+try{const s=localStorage.getItem('hk-cards-tab'); if(s&&(NAT[s]||s==='land')) cur=s;}catch(e){}
+
+function cardHTML(nat,n){
+  const N=NAT[nat], sw=SWAP[nat]&&SWAP[nat][n], t=sw||BASE[n], odd=n%2===1;
+  const img=(ART[nat]||0)>=n?`<img src="img/${nat}/${pad(n)}.webp" alt="${N.n}の${ROLE[n-1]}">`:`<div class="ph">イラスト待ち</div>`;
+  return `<div class="inner"><div class="art">${img}<div class="num">${n}</div><div class="emb" title="${N.n}">${EMB[nat]}</div></div>
+    <div class="body"><div class="name"><span>${ROLE[n-1]}</span><span class="kind ${odd?'enter':'comp'}" title="${odd?'出陣効果（置いた時）':'攻略時効果（3枚目で陣形を完成させた時）'}">${odd?I1:I3}</span></div>
+    <div class="ab ${t.length>40?'xl':t.length>28?'l':''}"><b class="abn">${abn({nat,num:n})}</b>${t}</div>
+    <div class="foot"><span>${N.n}の${ROLE[n-1]}</span><span>${pad(n)}/10</span></div></div></div>`;
+}
+function landHTML(i){
+  const L=LANDS[i], img=(ART.land||0)>i?`<img src="img/land/${pad(i+1)}.webp" alt="${L.nm}">`:'<div class="ph">イラスト待ち</div>';
+  return `${img}<div class="lbox"><div class="lname"><span>${L.nm}</span><span class="pts ${L.pts?'':'zero'}">${L.pts?'+'+L.pts+'点':'0点'}</span></div>
+    <div class="lef"><span class="tag ${L.b?'bonus':'gain'}">攻略報酬</span>${L.b||L.e}</div></div>`;
+}
+function render(){
+  document.getElementById('tabs').innerHTML=Object.entries(NAT).map(([k,v])=>
+    `<button class="tab" data-tab="${k}" aria-pressed="${k===cur}"><span class="dot" style="background:${v.c}"></span>${v.n}<span class="sps">✦${Object.keys(SWAP[k]).join('・')}</span><span class="cnt">${ART[k]||0}/10</span></button>`).join('')
+    +`<button class="tab" data-tab="land" aria-pressed="${cur==='land'}"><span class="dot" style="background:#9e9474"></span>土地<span class="cnt">${ART.land||0}/12</span></button>`;
+  if(cur==='land'){
+    document.getElementById('natinfo').innerHTML='<b>土地</b>　枠なしの風景カード。陣形を完成させた側が攻略し、点数と攻略報酬は下の箱に表示。';
+    document.getElementById('grid').innerHTML=LANDS.map((L,i)=>`<button class="lcard" data-l="${i}" aria-label="${L.nm}">${landHTML(i)}</button>`).join('');
+    return;
+  }
+  const N=NAT[cur];
+  document.getElementById('natinfo').innerHTML=`<span class="emb" style="${vars(N)}">${EMB[cur]}</span><b style="color:${N.c}">${N.n}</b>　盟約：${N.trait}<br>国技：${Object.keys(SWAP[cur]).map(n=>`<span class="spchip">✦ ${n} ${ROLE[n-1]}</span>`).join('')}`;
+  document.getElementById('grid').innerHTML=ROLE.map((r,i)=>`<button class="card ${SWAP[cur][i+1]?'sp':''}" style="${vars(N)}" data-n="${i+1}" aria-label="${N.n}の${r}">${cardHTML(cur,i+1)}</button>`).join('');
+}
+document.addEventListener('click',e=>{
+  const tb=e.target.closest('[data-tab]');
+  if(tb){cur=tb.dataset.tab; try{localStorage.setItem('hk-cards-tab',cur)}catch(e){} return render();}
+  const lc=e.target.closest('#grid .lcard');
+  if(lc){document.getElementById('zoom').innerHTML=`<div class="ov" id="ov"><button class="close" id="cl">閉じる</button><div class="lcard">${landHTML(+lc.dataset.l)}</div></div>`;return;}
+  const c=e.target.closest('#grid .card');
+  if(c){document.getElementById('zoom').innerHTML=`<div class="ov" id="ov"><button class="close" id="cl">閉じる</button><div class="card ${SWAP[cur][+c.dataset.n]?'sp':''}" style="${vars(NAT[cur])}">${cardHTML(cur,+c.dataset.n)}</div></div>`;return;}
+  if(e.target.id==='ov'||e.target.id==='cl') document.getElementById('zoom').innerHTML='';
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('zoom').innerHTML='';});
+render();
+document.getElementById('lgI1').innerHTML=I1; document.getElementById('lgI3').innerHTML=I3;
+</script>
+</body></html>

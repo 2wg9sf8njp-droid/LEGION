@@ -1,0 +1,1069 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="レギオン：国を率いて陣形を組み、土地を攻略する2人対戦カードゲーム">
+<title>レギオン</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@500;700&family=Cinzel:wght@600;800&family=Klee+One:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+body{margin:0}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* A war table at night: dark felt, parchment cards, gold for anything that scores or is special. */
+:root{
+  --table:#141a2a; --table2:#24304a; --panel:#232c3f; --panel2:#2c3852; --ink:#f1ead8; --muted:#a8b0c2; --line:#46506a;
+  --face:#f8f4ea; --faceInk:#2a241a; --faceMuted:#6c6250;
+  --gold:#d9b25a; --gold2:#a07a24; --hi:#7fb8ea; --hiBg:rgba(127,184,234,.16);
+  --enter:#2f6fb0; --comp:#9a5a16;
+  --f-disp:"Kaisei Decol","Hiragino Mincho ProN",serif; --f-num:"Cinzel",serif;
+  --f-text:"Klee One","Hiragino Sans",sans-serif; --f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:radial-gradient(90% 55% at 50% -5%,rgba(217,178,90,.18),transparent 60%) fixed,radial-gradient(70% 50% at 100% 100%,rgba(90,56,142,.35),transparent 70%) fixed,radial-gradient(60% 45% at 0% 70%,rgba(44,76,146,.35),transparent 70%) fixed,linear-gradient(180deg,var(--table2),var(--table) 60%) fixed,var(--table);color:var(--ink);font-family:var(--f-body);
+  padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px));padding-block:10px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
+h1{font-family:var(--f-disp);font-weight:700;font-size:1.45rem;margin:0;letter-spacing:.12em;color:var(--gold);text-shadow:0 1px 0 #000}
+h2{font-family:var(--f-disp);font-weight:700;font-size:1.15rem;margin:0;color:var(--gold)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:7px 12px}
+button.primary{background:linear-gradient(180deg,#f0d27c,#c9962e);border-color:#7a5618;color:#2a1c04;font-weight:700}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,.hc:focus-visible,.land:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--muted);font-size:.8rem}
+.top{display:flex;justify-content:space-between;align-items:center}
+.top button{padding:5px 10px;font-size:.8rem}
+/* nation emblem */
+.emb{width:1.9em;height:1.9em;border-radius:50%;display:inline-grid;place-items:center;flex:none;position:relative;
+  background:radial-gradient(circle at 35% 30%,var(--c1),var(--c2) 70%);box-shadow:0 0 0 1.5px var(--c3),0 1px 3px rgba(0,0,0,.5)}
+.emb svg{width:62%;height:62%;fill:var(--c3);stroke:var(--c3);stroke-linejoin:round;stroke-linecap:round}
+.emb.lead::after{content:"♛";position:absolute;top:-.85em;left:50%;transform:translateX(-50%);font-size:.7em;color:var(--gold);text-shadow:0 1px 2px #000}
+/* player panels */
+.pp{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid rgba(217,178,90,.35);border-radius:12px;padding:9px 12px;position:relative;box-shadow:inset 0 0 0 3px rgba(20,26,42,.6),inset 0 0 0 4px rgba(217,178,90,.18)}
+.orn::before,.orn::after{content:'';position:absolute;width:22px;height:22px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M1 1h8M1 1v8M1 1l6 6' stroke='%23d9b25a' stroke-width='1.3' fill='none'/%3E%3Ccircle cx='7.5' cy='7.5' r='1.6' fill='%23d9b25a'/%3E%3C/svg%3E") no-repeat;pointer-events:none;opacity:.85}
+.orn::before{left:3px;top:3px}.orn::after{right:3px;bottom:3px;transform:rotate(180deg)}
+.pp.turn{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 16px rgba(217,178,90,.35)}
+.pp.turn .tn{display:block}
+.tn{display:none;position:absolute;top:-9px;left:30px;z-index:2;font-size:.62rem;font-weight:700;background:var(--gold);color:#2a1c04;border-radius:4px;padding:0 6px}
+.pp .embs{display:flex;gap:6px;padding-top:4px}
+.pp .who{min-width:0}
+.pp .nm{font-family:var(--f-disp);font-weight:700;font-size:.95rem}
+.pp .st{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums;display:flex;gap:8px;flex-wrap:wrap}
+.pp .tr{grid-column:1/-1;font-size:.74rem;color:var(--muted);border-top:1px solid var(--line);padding-top:5px;font-family:var(--f-text);font-weight:600}
+.pp .tr b{color:var(--gold);font-family:var(--f-body)}
+.score{width:2.6em;height:2.6em;border-radius:50%;display:grid;place-items:center;font-family:var(--f-num);font-weight:800;font-size:1.25rem;color:#2a1c04;
+  background:radial-gradient(circle at 35% 30%,#fbe8a6,#c9962e 75%);box-shadow:0 0 0 2px #7a5618,0 2px 6px rgba(0,0,0,.5);font-variant-numeric:tabular-nums}
+.opphand{display:flex;gap:3px;grid-column:1/-1}
+.back{width:18px;height:25px;border-radius:3px;background:repeating-linear-gradient(45deg,#3b4a40 0 3px,#33413a 3px 6px);border:1px solid #5a6b5f}
+.back.rv{width:auto;height:25px;padding:0 6px;display:grid;place-items:center;font-family:var(--f-num);font-weight:800;font-size:.8rem;background:var(--face);color:var(--faceInk);border-color:var(--gold)}
+/* board */
+.board{display:grid;gap:5px}
+.land{display:flex;flex-direction:column;gap:4px;min-width:0;border-radius:10px;padding:3px;cursor:pointer;transition:background .15s}
+.land.cand{background:var(--hiBg);box-shadow:inset 0 0 0 2px var(--hi)}
+.stack{display:flex;flex-direction:column;gap:3px}
+.mc,.slot{height:36px;border-radius:6px}
+.slot{border:1px dashed rgba(169,179,166,.22)}
+.mc{background:var(--face);color:var(--faceInk);display:flex;align-items:center;gap:3px;padding:0 3px 0 0;position:relative;overflow:hidden;box-shadow:0 0 0 1.5px var(--c3),0 1px 3px rgba(0,0,0,.4)}
+.mc .th{flex:none;width:30px;height:100%;background:center 6%/cover no-repeat;border-right:2px solid var(--c3)}
+.mc .n{font-family:var(--f-num);font-weight:800;font-size:1rem;min-width:1.1em;text-align:center;color:var(--c3)}
+.mc .r{font-family:var(--f-disp);font-size:.6rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc .mk{color:#b65a88;font-size:.6rem}
+.mc.tp{box-shadow:0 0 0 2px var(--gold),0 1px 4px rgba(0,0,0,.5)}
+.mc.dim{opacity:.55}
+.mc.sp .n{color:#8a6420}
+.tile{border-radius:9px;background:#3a463d center 20%/cover no-repeat;aspect-ratio:3/4;position:relative;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(0,0,0,.5),0 3px 8px rgba(0,0,0,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.tile .pt{position:absolute;right:4px;top:4px;font-family:var(--f-num);font-weight:800;font-size:.72rem;color:#2a1c04;min-width:1.9em;height:1.9em;border-radius:999px;display:grid;place-items:center;padding:0 4px;
+  background:radial-gradient(circle at 35% 30%,#fbe8a6,#c9962e 75%);box-shadow:0 0 0 1.5px #7a5618,0 1px 3px rgba(0,0,0,.5)}
+.tile .pt.z{background:#bdb5a0;box-shadow:0 0 0 1.5px #6c6250}
+.tile .tb{margin:0 4px 4px;background:rgba(248,244,234,.92);border-radius:6px;padding:3px 4px 4px;color:var(--faceInk);box-shadow:0 1px 4px rgba(0,0,0,.35);text-align:center}
+.tile .nm{font-family:var(--f-disp);font-weight:700;font-size:.8rem;line-height:1.2;letter-spacing:.04em}
+.tile .ef{font-family:var(--f-text);font-weight:600;font-size:.6rem;line-height:1.3;color:#5d5545;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tile .ef .tg{display:inline-block;font-family:var(--f-body);font-size:.52rem;font-weight:700;color:#fff;border-radius:3px;padding:0 3px;margin-right:2px;vertical-align:1px}
+.tg.bonus{background:#6b7d3a}.tg.gain{background:#8a5a9e}
+.tile .st{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin:0 3px 3px}
+.tile .st span{font-size:.54rem;white-space:nowrap;font-weight:700;color:#fff;border-radius:3px;padding:0 4px;box-shadow:0 1px 2px rgba(0,0,0,.5)}
+.st .fg{background:#b0602a}.st .cu{background:#5a388e}
+.remain{text-align:center;font-size:.72rem;color:var(--muted)}
+/* prompt + info */
+.prompt{background:linear-gradient(90deg,#24415e,#2f557a);color:#fff;border:1px solid #4d79a3;border-radius:10px;padding:7px 10px;display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:.88rem;font-weight:500}
+.prompt.wait{background:var(--panel);border-color:var(--line);color:var(--muted)}
+.prompt button{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.45);color:#fff;padding:4px 10px;font-size:.8rem}
+.info{min-height:62px;background:var(--face);color:var(--faceInk);border-radius:10px;padding:8px 10px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.info .ci{flex:none;width:48px;aspect-ratio:3/4;border-radius:6px;background:center 0/cover;box-shadow:0 0 0 2px var(--c3)}
+.info .ib{min-width:0;flex:1}
+.info .in{font-family:var(--f-disp);font-weight:700;font-size:.95rem;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.info .it{font-family:var(--f-text);font-weight:600;font-size:.84rem;line-height:1.5;margin-top:2px}
+.info .hint{font-size:.8rem;color:var(--faceMuted);font-family:var(--f-text);font-weight:600;line-height:1.5}
+.kd{font-family:var(--f-body);font-size:.6rem;font-weight:700;color:#fff;border-radius:3px;padding:1px 5px}
+.kd.e{background:var(--enter)}.kd.c{background:var(--comp)}
+.swt{font-family:var(--f-body);font-size:.6rem;font-weight:700;color:#3a2a08;border-radius:3px;padding:1px 5px;background:linear-gradient(180deg,#fbe8a6,#d7ab48);box-shadow:0 0 0 1px #8a6420}
+.st2{font-family:var(--f-body);font-size:.68rem;font-weight:700;color:#b65a88}
+/* hand: small versions of the printed cards */
+.hand{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;padding-top:4px}
+.hc{position:relative;border:none;padding:4px;border-radius:9px;text-align:left;display:flex;flex-direction:column;color:var(--faceInk);
+  background:linear-gradient(160deg,var(--c1),var(--c2) 55%,color-mix(in srgb,var(--c2) 70%,var(--c3)));
+  box-shadow:0 2px 6px rgba(0,0,0,.45),inset 0 0 0 1px color-mix(in srgb,var(--c3) 50%,transparent);transition:transform .15s,box-shadow .15s}
+.hc .in2{background:var(--face);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;flex:1;box-shadow:0 0 0 1px color-mix(in srgb,var(--c3) 55%,transparent)}
+.hc .art{display:block;width:100%;aspect-ratio:1/1;background:center 0/cover no-repeat;border-bottom:2px solid var(--c2)}
+.hc .n{position:absolute;left:6px;top:6px;width:1.7em;height:1.7em;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--f-num);font-weight:800;font-size:.95rem;
+  background:radial-gradient(circle at 35% 30%,var(--c2),var(--c3) 75%);text-shadow:0 1px 2px rgba(0,0,0,.4);box-shadow:0 0 0 2px var(--face),0 1px 3px rgba(0,0,0,.4)}
+.hc .r{font-family:var(--f-disp);font-weight:700;font-size:.82rem;white-space:nowrap;padding:3px 5px 0;display:flex;justify-content:space-between;align-items:center;gap:2px;color:color-mix(in srgb,var(--c3) 45%,var(--faceInk))}
+.hc .k{font-size:.6rem;color:var(--faceMuted);padding:1px 5px 4px}
+.hc.sp{box-shadow:0 0 0 2px #d7ab48,0 0 12px rgba(240,200,90,.55),0 2px 6px rgba(0,0,0,.45)}
+.hc.sp .n{box-shadow:0 0 0 2px #fff3c4,0 0 0 4px #c9a24e,0 0 10px 3px rgba(246,210,100,.75)}
+.hc.sel{transform:translateY(-6px);box-shadow:0 0 0 3px var(--hi),0 8px 16px rgba(0,0,0,.5)}
+.hc.land2 .art{aspect-ratio:3/4}
+.hc .rev{position:absolute;right:6px;top:6px;font-size:.58rem;background:var(--enter);color:#fff;border-radius:4px;padding:0 4px}
+/* log */
+.log{background:rgba(0,0,0,.18);border-radius:10px;padding:6px 10px;font-size:.75rem;color:var(--muted)}
+.log summary{cursor:pointer;color:var(--ink);list-style:none;font-family:var(--f-text);font-weight:600}
+.log summary::-webkit-details-marker{display:none}
+.log summary::before{content:"▸ ";color:var(--muted)}.log[open] summary::before{content:"▾ "}
+.log .ls{display:flex;flex-direction:column;gap:2px;max-height:140px;overflow:auto;margin-top:4px}
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(6,10,8,.7);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
+.sheet{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:14px;max-width:580px;width:100%;max-height:82vh;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.sheet p,.sheet li{font-size:.86rem;line-height:1.7}
+.sheet li b{color:var(--gold)}
+.endsc{display:flex;justify-content:center;gap:28px;align-items:center;padding:6px 0}
+.endsc div{text-align:center;font-size:.8rem;color:var(--muted)}
+.endsc .score{margin:0 auto 4px;font-size:1.6rem}
+/* setup */
+.lead{font-family:var(--f-text);font-weight:600;font-size:.88rem;color:var(--muted);margin:0}
+.ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.nat{position:relative;border:none;border-radius:12px;padding:0;overflow:hidden;text-align:left;display:flex;flex-direction:column;background:var(--panel);
+  box-shadow:0 0 0 1.5px var(--c3),0 3px 10px rgba(0,0,0,.4);transition:transform .15s}
+.nat:hover{transform:translateY(-2px)}
+.nat .bn{height:92px;background:center 12%/cover no-repeat;position:relative}
+.nat .bn::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,var(--panel))}
+.nat .bd{padding:0 10px 10px;margin-top:-22px;position:relative;z-index:1;display:flex;flex-direction:column;gap:4px}
+.nat .t{display:flex;align-items:center;gap:8px;font-family:var(--f-disp);font-weight:700;font-size:1.1rem}
+.nat .t .emb{font-size:1.05rem}
+.nat .sty{font-size:.66rem;font-weight:700;color:#2a1c04;background:var(--c1);border-radius:999px;padding:1px 8px;align-self:flex-start}
+.nat .tr{font-family:var(--f-text);font-weight:600;font-size:.8rem;line-height:1.5}
+.nat .sw{font-size:.72rem;color:var(--muted);line-height:1.5}
+.nat .sw b{color:var(--gold)}
+.nat .mark{position:absolute;right:8px;top:8px;z-index:2;font-size:.7rem;font-weight:700;border-radius:999px;padding:2px 9px}
+.nat.sel{box-shadow:0 0 0 2.5px var(--hi),0 3px 10px rgba(0,0,0,.4)}
+.nat.sel .mark{background:var(--hi);color:#0d2236}
+.nat.ld{box-shadow:0 0 0 2.5px var(--gold),0 0 16px rgba(217,178,90,.45)}
+.nat.ld .mark{background:linear-gradient(180deg,#fbe8a6,#c9962e);color:#2a1c04}
+.go{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--table) 30%);padding:14px 0 6px}
+
+h1{background:linear-gradient(180deg,#fff1c2,#d9b25a 55%,#a07a24);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;display:flex;align-items:center;gap:8px}
+h1 .ver{font-family:var(--f-num);font-size:.6rem;letter-spacing:.05em;color:#2a1c04;background:linear-gradient(180deg,#fbe8a6,#c9962e);-webkit-text-fill-color:#2a1c04;border-radius:999px;padding:1px 7px;align-self:center}
+h1::before,h1::after{content:"";width:18px;height:18px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg fill='none' stroke='%23d9b25a' stroke-width='1.2'%3E%3Cpath d='M20 4l4 12 12 4-12 4-4 12-4-12-12-4 12-4z'/%3E%3Cpath d='M20 10l2.5 7.5L30 20l-7.5 2.5L20 30l-2.5-7.5L10 20l7.5-2.5z' opacity='.6'/%3E%3Ccircle cx='20' cy='20' r='17' opacity='.5'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;flex:none}
+.opts{display:flex;gap:4px;flex-wrap:wrap}
+.opts button{padding:4px 9px;font-size:.74rem}
+.kd{display:inline-grid;place-items:center;width:1.55em;height:1.55em;padding:0!important;border-radius:4px;vertical-align:-.25em}
+.kd svg{width:78%;height:78%;color:#fff}
+.kd.wide{width:auto;padding:1px 6px!important;gap:3px;display:inline-flex}
+.kd.wide svg{width:.95em;height:.95em}
+.tile.glow,.mc.glow{animation:glow 1s ease-in-out infinite alternate}
+@keyframes glow{from{box-shadow:0 0 0 2px #fff3c4,0 0 10px 4px rgba(246,210,100,.7)}to{box-shadow:0 0 0 3px #fff3c4,0 0 22px 10px rgba(246,210,100,.95)}}
+.land.over{background:rgba(217,178,90,.18);box-shadow:inset 0 0 0 2px var(--gold)}
+.stack{min-height:calc(36px*3 + 6px);justify-content:flex-start}
+.stack.opp{justify-content:flex-end}
+.slot{border:1px dashed rgba(168,176,194,.28)}
+.need{font-size:.58rem;font-weight:700;color:#2a1c04;background:linear-gradient(180deg,#fbe8a6,#d7ab48);border-radius:4px;padding:1px 4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pred{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-family:var(--f-num);font-weight:800;font-size:1.15rem;color:#2a1c04;padding:2px 9px;border-radius:999px;
+  background:radial-gradient(circle at 35% 30%,#fff1c2,#d9a63a 75%);box-shadow:0 0 0 2px #7a5618,0 0 14px rgba(246,210,100,.9);white-space:nowrap;pointer-events:none}
+.pred.bad{font-family:var(--f-body);font-size:.66rem;color:#fff;background:#8a2a2a;box-shadow:0 0 0 2px #4a1010}
+.hc.fit::after{content:"";position:absolute;inset:-3px;border-radius:11px;box-shadow:0 0 0 2px #9fe0a8,0 0 12px rgba(159,224,168,.75);pointer-events:none}
+.hc{touch-action:none;user-select:none;-webkit-user-select:none}
+.ghost{position:fixed;z-index:60;width:76px;aspect-ratio:3/4;border-radius:8px;background:center 0/cover;box-shadow:0 0 0 2px var(--gold),0 10px 24px rgba(0,0,0,.6);pointer-events:none;transform:translate(-50%,-60%) rotate(-4deg)}
+.taken{grid-column:1/-1;display:flex;gap:4px;flex-wrap:wrap;min-height:30px;align-items:center}
+.taken .lbl{font-size:.66rem;color:var(--muted);margin-right:2px}
+.tk{width:24px;height:32px;border-radius:4px;background:center/cover;box-shadow:0 0 0 1.5px var(--gold),0 1px 3px rgba(0,0,0,.5);border:none;padding:0;cursor:pointer}
+.st button{background:none;border:none;color:inherit;padding:0;font:inherit;text-decoration:underline dotted;cursor:pointer}
+.back{width:22px;height:31px;border-radius:4px;border:1px solid #a07a24;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg fill='none' stroke='%23d9b25a' stroke-width='1.2'%3E%3Cpath d='M20 4l4 12 12 4-12 4-4 12-4-12-12-4 12-4z'/%3E%3Cpath d='M20 10l2.5 7.5L30 20l-7.5 2.5L20 30l-2.5-7.5L10 20l7.5-2.5z' opacity='.6'/%3E%3Ccircle cx='20' cy='20' r='17' opacity='.5'/%3E%3C/g%3E%3C/svg%3E") center/80% no-repeat,radial-gradient(circle at 50% 45%,#3a2f63,#1d1838 75%)}
+.pop{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:50;pointer-events:none;display:flex;gap:12px;align-items:center;
+  background:linear-gradient(180deg,rgba(44,56,82,.97),rgba(20,26,42,.97));border:1px solid var(--gold);border-radius:14px;padding:12px 16px 12px 12px;box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 30px rgba(217,178,90,.3);
+  animation:popin .25s ease-out;max-width:min(92vw,440px)}
+@keyframes popin{from{opacity:0;transform:translate(-50%,-40%) scale(.92)}}
+.pop .pi{flex:none;width:74px;aspect-ratio:3/4;border-radius:8px;background:center 0/cover;box-shadow:0 0 0 2px var(--c3),0 0 0 4px var(--c1)}
+.pop .pn{font-family:var(--f-disp);font-weight:700;font-size:1.3rem;color:var(--gold);letter-spacing:.08em}
+.pop .pw{font-size:.72rem;color:var(--muted)}
+.pop .pt2{font-family:var(--f-text);font-weight:600;font-size:.85rem;line-height:1.5;margin-top:3px}
+.fly{position:fixed;z-index:55;transform:translate(-50%,-50%);font-family:var(--f-num);font-weight:800;font-size:2rem;color:#ffe9a8;text-shadow:0 2px 0 #7a5618,0 0 18px rgba(246,210,100,.9);pointer-events:none;animation:flyup 1.4s ease-out forwards}
+@keyframes flyup{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}20%{opacity:1;transform:translate(-50%,-60%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-160%) scale(1)}}
+.flyimg{position:fixed;z-index:54;border-radius:9px;background:center/cover;transform-origin:0 0;box-shadow:0 0 0 2px var(--gold),0 10px 30px rgba(0,0,0,.6);pointer-events:none}
+/* zoomed card */
+.zov{align-items:center}
+.zc{position:relative;width:min(340px,86vw);aspect-ratio:63/88;border-radius:14px;padding:8px;display:flex;flex-direction:column;
+  background:radial-gradient(120% 60% at 15% 8%,color-mix(in srgb,var(--c1) 90%,#fff) 0,transparent 55%),linear-gradient(160deg,var(--c1),var(--c2) 55%,color-mix(in srgb,var(--c2) 70%,var(--c3)));
+  box-shadow:0 20px 60px rgba(0,0,0,.6),inset 0 0 0 1px color-mix(in srgb,var(--c3) 45%,transparent)}
+.zc.sp{box-shadow:0 0 0 3px #d7ab48,0 0 30px rgba(240,200,90,.6),0 20px 60px rgba(0,0,0,.6)}
+.zc .zi{flex:1;border-radius:9px;background:var(--face);overflow:hidden;display:flex;flex-direction:column;color:var(--faceInk)}
+.zc .za{flex:0 0 62%;background:center 0/cover;border-bottom:2px solid var(--c2)}
+.zc .zn{position:absolute;left:14px;top:14px;width:2.3em;height:2.3em;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--f-num);font-weight:800;font-size:1.3rem;
+  background:radial-gradient(circle at 35% 30%,var(--c2),var(--c3) 75%);box-shadow:0 0 0 3px var(--face),0 2px 6px rgba(0,0,0,.4)}
+.zc.sp .zn{box-shadow:0 0 0 3px #fff3c4,0 0 0 6px #c9a24e,0 0 16px 5px rgba(246,210,100,.8)}
+.zc .zb{padding:8px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.zc .zt{font-family:var(--f-disp);font-weight:700;font-size:1.3rem;display:flex;justify-content:space-between;align-items:center;color:color-mix(in srgb,var(--c3) 45%,var(--faceInk))}
+.zc .zab{font-family:var(--f-disp);font-weight:700;font-size:.9rem;color:var(--c3);display:flex;gap:6px;align-items:center}
+.zc .zx{font-family:var(--f-text);font-weight:600;font-size:.95rem;line-height:1.55}
+.zc.sp .zx{background:linear-gradient(180deg,rgba(246,220,140,.35),rgba(246,220,140,.06));border-radius:6px;padding:2px 6px}
+.zl{width:min(340px,86vw);aspect-ratio:3/4;border-radius:14px;background:center/cover;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6);display:flex;flex-direction:column;justify-content:flex-end;padding:12px}
+.zl .tb{background:rgba(248,244,234,.93);border-radius:9px;padding:8px 12px;color:var(--faceInk)}
+.zl .nm{font-family:var(--f-disp);font-weight:700;font-size:1.35rem;display:flex;justify-content:space-between;align-items:center}
+.zl .ef{font-family:var(--f-text);font-weight:600;font-size:.95rem;line-height:1.5;margin-top:4px}
+.zl .gv{display:flex;gap:4px;margin-top:6px;align-items:center;font-size:.72rem;color:var(--faceMuted)}
+.gv span{width:30px;height:40px;border-radius:4px;background:center 0/cover;box-shadow:0 0 0 1.5px var(--c3)}
+.zhint{color:var(--muted);font-size:.75rem;text-align:center;margin-top:8px}
+.zwrap{display:flex;flex-direction:column;align-items:center}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.gc{aspect-ratio:3/4;border-radius:6px;background:center 0/cover;position:relative;box-shadow:0 0 0 2px var(--c3);border:none;padding:0;cursor:pointer}
+.gc b{position:absolute;left:3px;top:3px;width:1.5em;height:1.5em;border-radius:50%;display:grid;place-items:center;font-family:var(--f-num);font-size:.7rem;color:#fff;background:var(--c3)}
+/* rules */
+.ex{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 10px}
+.exb{background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;flex:1;min-width:150px}
+.exb .ec{display:flex;gap:3px}
+.exb .ec span{flex:1;aspect-ratio:3/4;border-radius:5px;background:center 0/cover;position:relative;box-shadow:0 0 0 1.5px var(--c3)}
+.exb .ec span b{position:absolute;left:2px;top:2px;width:1.4em;height:1.4em;border-radius:50%;display:grid;place-items:center;font-family:var(--f-num);font-size:.62rem;color:#fff;background:var(--c3)}
+.exb .et{font-family:var(--f-disp);font-weight:700;color:var(--gold);display:flex;justify-content:space-between}
+.exb .ed{font-size:.72rem;color:var(--muted);line-height:1.5}
+.board-dia{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:.78rem;align-items:center;background:rgba(0,0,0,.2);border-radius:10px;padding:10px;border:1px solid var(--line)}
+.board-dia .bx{padding:3px 8px;border-radius:6px;text-align:center;font-size:.7rem;font-weight:700}
+.sheet h3{font-family:var(--f-disp);color:var(--gold);font-size:.95rem;margin:8px 0 2px}
+.seg{display:flex;gap:0;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:none;border-radius:0;padding:5px 12px;font-size:.78rem;background:transparent}
+.seg button[aria-pressed="true"]{background:linear-gradient(180deg,#f0d27c,#c9962e);color:#2a1c04;font-weight:700}
+.setrow{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.8rem;color:var(--muted)}
+.setrow label{display:flex;gap:6px;align-items:center}
+.modes{align-self:flex-start}.modes button{padding:7px 16px;font-size:.85rem}
+.btnlink{font:inherit;font-size:.8rem;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:5px 10px}
+.join{display:inline-flex;gap:6px;align-items:center}
+.join input{font-family:var(--f-num);font-weight:800;font-size:1rem;letter-spacing:.2em;text-transform:uppercase;width:6.2em;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.neterr{color:#ffb4a8;background:rgba(160,40,30,.25);border:1px solid rgba(255,140,120,.4);border-radius:8px;padding:8px 10px;margin:0;font-size:.85rem}
+.lobby{position:relative;margin:30px auto;max-width:420px;width:100%;text-align:center;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid rgba(217,178,90,.35);border-radius:14px;padding:24px 16px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.lobby p{margin:0}
+.lobby .code{font-family:var(--f-num);font-weight:800;font-size:3rem;letter-spacing:.3em;padding-left:.3em;color:#ffe9a8;text-shadow:0 0 18px rgba(246,210,100,.5);user-select:all}
+.spin{width:26px;height:26px;border-radius:50%;border:3px solid rgba(217,178,90,.25);border-top-color:var(--gold);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.netbar{font-size:.75rem;color:var(--muted);text-align:right;margin-top:-4px}.netbar b{font-family:var(--f-num);color:var(--gold);letter-spacing:.15em}
+.top{flex-wrap:wrap;gap:6px}
+h1{white-space:nowrap}
+.exb .ec{max-width:200px}
+@media (max-width:480px){h1{font-size:1.2rem}.opts button{padding:3px 7px;font-size:.68rem}.exb{min-width:0;flex-basis:100%}}
+
+@media (max-width:480px){.hc .r{font-size:.72rem;padding:3px 3px 4px}.hc .r .kd{font-size:.5rem;padding:0 3px}.tile .st span{font-size:.5rem;padding:0 2px}.mc .th{width:22px}.mc .r{display:none}.tile .ef{display:none}.hand{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.hc .k{display:none}}
+@media (prefers-reduced-motion:reduce){.hc.sel,.nat:hover{transform:none}}
+</style>
+
+</head><body>
+<div class="wrap" id="app"></div>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+<script>
+const NAT={
+  human:{n:'人',c:'#3d7ea6',trait:'3か国バラバラの列陣も2点'},
+  elf:{n:'エルフ',c:'#3c7a45',trait:'1つ飛ばしの列陣（2-4-6など）も陣形になる（森の列陣）'},
+  dwarf:{n:'ドワーフ',c:'#b0602a',trait:'自分のカードは相手の効果で動かされない'},
+  dragon:{n:'ドラゴニュート',c:'#9a3226',trait:'同陣が4点'},
+  mermaid:{n:'人魚',c:'#2c4c92',trait:'毎ターン1回、自分の一番上を別の土地へ移せる（潮流）。移して陣形が完成したら1枚引く'},
+  fairy:{n:'フェアリー',c:'#b65a88',trait:'フェアリーのカードを置いたターン、場の一番上1枚に花の印を付けられる'},
+  beast:{n:'獣人',c:'#8c95a5',trait:'同じ国のカードの上に重ねると1枚引く'},
+  demon:{n:'魔族',c:'#5a388e',trait:'墓地が8枚以上なら陣形の得点+1。自分の呪いは得点を0にする'},
+};
+const EMB={
+ human:'<svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z" fill="none" stroke-width="2"/><path d="M12 6v11M7.5 10.5h9" fill="none" stroke-width="2"/></svg>',
+ elf:'<svg viewBox="0 0 24 24"><path d="M20 3C9 3 4 9 4 15c0 2 .6 3.6 1.4 5C8 13 12 10 16 8c-4 3-7 6-9.4 12.6C8 21.5 9.6 22 11 22c6 0 10-6 9-19z"/></svg>',
+ dwarf:'<svg viewBox="0 0 24 24"><path d="M11 3h2v19h-2z"/><path d="M13 4c4 0 7 2 8 6-2-1-5-1-8 1zM11 4C7 4 4 6 3 10c2-1 5-1 8 1z"/></svg>',
+ dragon:'<svg viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z"/></svg>',
+ mermaid:'<svg viewBox="0 0 24 24"><path d="M2 15c2.5-3 5-3 7.5 0s5 3 7.5 0 3.5-2 5-1M2 20c2.5-3 5-3 7.5 0s5 3 7.5 0 3.5-2 5-1" fill="none" stroke-width="2"/><path d="M12 2v9M8 4v4c0 2 2 3 4 3s4-1 4-3V4" fill="none" stroke-width="2"/></svg>',
+ fairy:'<svg viewBox="0 0 24 24"><g><ellipse cx="12" cy="6.5" rx="3.2" ry="4.5"/><ellipse cx="12" cy="6.5" rx="3.2" ry="4.5" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.5" rx="3.2" ry="4.5" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.5" rx="3.2" ry="4.5" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.5" rx="3.2" ry="4.5" transform="rotate(288 12 12)"/></g><circle cx="12" cy="12" r="2.4" fill="#fff"/></svg>',
+ beast:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="16.5" rx="5" ry="4.2"/><ellipse cx="5" cy="10.5" rx="2.2" ry="2.8"/><ellipse cx="19" cy="10.5" rx="2.2" ry="2.8"/><ellipse cx="9" cy="5.5" rx="2.2" ry="2.9"/><ellipse cx="15" cy="5.5" rx="2.2" ry="2.9"/></svg>',
+ demon:'<svg viewBox="0 0 24 24"><path d="M4 2c0 5 2 7 5 8M20 2c0 5-2 7-5 8" fill="none" stroke-width="2"/><path d="M2 15c3-4 7-5 10-5s7 1 10 5c-3 4-7 5-10 5s-7-1-10-5z"/><circle cx="12" cy="15" r="3" fill="#c0283a" stroke="none"/><path d="M12 12.6v4.8" stroke="#1a0f22" stroke-width="1.4"/></svg>',
+};
+const PAL={human:['#d4ebf6','#93c6e0','#3d7ea6'],elf:['#dcebc9','#94c07c','#3c7a45'],dwarf:['#f8dfbd','#e7a866','#b0602a'],dragon:['#f4cdc2','#d97a66','#9a3226'],
+  mermaid:['#c9d8f2','#7495d2','#2c4c92'],fairy:['#f9dce8','#eca6c4','#b65a88'],beast:['#ffffff','#e4e7ec','#8c95a5'],demon:['#e2d5f0','#a184cc','#5a388e']};
+const cv=nat=>`--c1:${PAL[nat][0]};--c2:${PAL[nat][1]};--c3:${PAL[nat][2]}`;
+const emb=(nat,lead)=>`<span class="emb ${lead?'lead':''}" style="${cv(nat)}" title="${NAT[nat].n}${lead?'（盟主）':''}">${EMB[nat]}</span>`;
+const ROLE=['民','兵士','斥候','商人','騎士','魔術師','聖職者','賢者','将軍','王'];
+const BASE={1:'1枚引く',2:'この陣形の得点+1',3:'相手の一番上を別の土地へ動かす',4:'2枚引いて1枚捨てる',5:'同じ土地の相手の一番上を相手の手札に押し返す',6:'相手の土地1つの一番上を墓地に送る',7:'墓地から1枚手札に戻す',8:'相手の手札を見て1枚墓地に送らせる',9:'もう1枚、別の土地に置ける',10:'この土地の得点を2倍にする'};
+const SWAP={
+  human:{4:'山札の上5枚から、この陣形に使っていない国のカードを1枚手札に加える',10:'この陣形が3か国バラバラなら得点3倍（そうでなければ2倍）'},
+  elf:{3:'山札の上3枚を見て1枚を手札に加え、残りは山札の上に戻す',6:'手札から1枚を、自分の別の土地に置く（出陣効果は発動しない）'},
+  dwarf:{2:'このカードの下にある偶数のカードの攻略時効果も発動する',5:'この土地に「鍛え」を置く。2枚でターンを迎えるたび+1（最大3）。攻略時、鍛えの数だけ得点+'},
+  dragon:{9:'この土地では、このカードを7〜10の好きな数字として扱う',10:'得点2倍の代わりに、相手の土地1つの相手側を丸ごと墓地に送る'},
+  mermaid:{3:'同じ土地で自分と相手の一番上を入れ替える',7:'自分の土地の一番上のカード1枚を手札に戻す'},
+  fairy:{1:'場の一番上のカード1枚に「花の印」を付ける（数字+1、10は1になる）',8:'印の付いた相手のカードを、すべて相手の手札に押し返す'},
+  beast:{1:'この土地の自分側に他の獣人がいれば、もう1枚この土地に置ける',9:'もう1枚、別の土地に置ける。置いたのが獣人なら、さらに1枚置ける'},
+  demon:{1:'自分の土地の一番上のカード1枚を墓地に送り、その出陣効果を発動する',7:'相手の土地1つに「呪い」を置く。相手がそこを攻略すると得点が半分（切り捨て）'},
+};
+const ABN={1:'補給',2:'鼓舞',3:'撹乱',4:'調達',5:'押し返し',6:'魔弾',7:'祈り',8:'看破',9:'進軍',10:'王命'};
+const SABN={human:{4:'交易',10:'同盟の王'},elf:{3:'先読み',6:'芽吹き'},dwarf:{2:'重ね打ち',5:'鍛造'},dragon:{9:'竜化',10:'業火'},
+  mermaid:{3:'渦潮',7:'還流'},fairy:{1:'花の印',8:'妖精のいたずら'},beast:{1:'群れ呼び',9:'狩りの号令'},demon:{1:'生贄',7:'呪縛'}};
+const abn=c=>(SABN[c.nat]&&SABN[c.nat][c.num])||ABN[c.num];
+const I1='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4.5" y="2" width="7" height="12" rx="1.3" fill="currentColor"/></svg>';
+const I3='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="5.4" height="9" rx="1" fill="currentColor" opacity=".55" transform="rotate(-12 3.7 8.5)"/><rect x="9.6" y="4" width="5.4" height="9" rx="1" fill="currentColor" opacity=".55" transform="rotate(12 12.3 8.5)"/><rect x="5.3" y="2.5" width="5.4" height="10" rx="1" fill="currentColor"/></svg>';
+const STYLE={human:'万能・協調',elf:'速攻（形）',dwarf:'溜め（鍛え）',dragon:'溜め（一撃）',mermaid:'操作',fairy:'妨害（印）',beast:'速攻（枚数）',demon:'妨害（呪い）'};
+const pad2=n=>String(n).padStart(2,'0');
+const cimg=c=>`img/${c.nat}/${pad2(c.num)}.webp`;
+const limg=l=>`img/land/${pad2(l.id+1)}.webp`;
+const LANDS=[
+  {nm:'王都',pts:2,b:'同陣なら+2点',bf:(r,cs)=>r.kind==='same'?2:0},
+  {nm:'深き森',pts:1,b:'同国3枚なら+2点',bf:(r,cs)=>cs.every(c=>c.nat===cs[0].nat)?2:0},
+  {nm:'竜の巣',pts:2,b:'9か10を含めば+2点',bf:(r,cs)=>r.vals.some(v=>v>=9)?2:0},
+  {nm:'鉱山',pts:1,b:'1〜3だけなら+2点',bf:(r,cs)=>r.vals.every(v=>v<=3)?2:0},
+  {nm:'丘陵',pts:0,b:'列陣なら+1点',bf:(r,cs)=>r.kind==='run'?1:0},
+  {nm:'戦場跡',pts:0,b:'相手側に2枚以上で+2点',bf:(r,cs,l,si)=>l.sides[1-si].length>=2?2:0},
+  {nm:'港町',pts:1,ef:'search',e:'山札の上5枚から1枚を手札に'},
+  {nm:'宿場',pts:0,ef:'mulligan',e:'手札を3枚まで引き直す'},
+  {nm:'古神殿',pts:0,ef:'recover',e:'墓地から1枚手札に戻す'},
+  {nm:'市場',pts:0,ef:'trade',e:'相手と手札を1枚交換'},
+  {nm:'見張り塔',pts:0,ef:'watch',e:'次に出る土地を3枚から選ぶ'},
+  {nm:'進軍路',pts:0,ef:'march',e:'次のターン2枚置ける'}];
+const txt=c=>(SWAP[c.nat]&&SWAP[c.nat][c.num])||BASE[c.num];
+const kind=c=>c.num%2?'出陣効果':'攻略時効果';
+const cname=c=>`${NAT[c.nat].n}の${ROLE[c.num-1]}(${c.num})`;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+const LIVE=typeof window!=='undefined'&&!globalThis.SIM;
+const GAME='レギオン', VER='v0.1';
+let OPT={speed:'normal',diff:'normal',sound:true};
+try{const o=JSON.parse(localStorage.getItem('hk-opt')||'null'); if(o) OPT={...OPT,...o};}catch(e){}
+const saveOpt=()=>{try{localStorage.setItem('hk-opt',JSON.stringify(OPT))}catch(e){}};
+const SPD={slow:1.8,normal:1,fast:.35}, NOISE={easy:5,normal:1,hard:.15};
+const SPN={slow:'ゆっくり',normal:'ふつう',fast:'はやい'}, DFN={easy:'やさしい',normal:'ふつう',hard:'つよい'};
+const NZ=()=>NOISE[OPT.diff]||1;
+const wait=ms=>LIVE?sleep(ms*(SPD[OPT.speed]||1)):Promise.resolve();
+let AC=null;
+function tone(fs,dur,type,vol,gap){ if(!LIVE||!OPT.sound) return; try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume();
+  const t=AC.currentTime; fs.forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain(),st=t+i*(gap||.07); o.type=type||'triangle'; o.frequency.value=f;
+  g.gain.setValueAtTime(0,st); g.gain.linearRampToValueAtTime(vol||.12,st+.012); g.gain.exponentialRampToValueAtTime(.0001,st+dur); o.connect(g).connect(AC.destination); o.start(st); o.stop(st+dur+.05);}); }catch(e){} }
+const SFX0={place:()=>tone([196,131],.2,'sine',.2,.04),claim:()=>tone([523,659,784,1047],.6,'triangle',.11),ability:()=>tone([988,1319,1760],.35,'sine',.06,.05),fall:()=>tone([220,165],.35,'sawtooth',.035,.08),pick:()=>tone([660],.08,'sine',.06)};
+const SFX={}; for(const k in SFX0) SFX[k]=()=>{ SFX0[k](); if(k==='place'||k==='fall') netEmit({t:'sfx',k}); };
+async function fx(c,land){ if(!LIVE) return; netEmit({t:'fx',c:sc(c),landId:land?land.id:null}); SFX.ability(); ui.pop={c}; ui.glow=land?land.id:null; render(); await wait(1150); ui.pop=null; ui.glow=null; render(); }
+let G=null, setup={sel:[],leader:null};
+let ui={sel:null,req:null,resolve:null,info:'',busy:false,modal:null,swap:false};
+let uid=0;
+
+function newGame(nats,leader,opp){
+  const mk=(ns)=>shuffle(ns.flatMap(nat=>Array.from({length:10},(_,i)=>({id:++uid,nat,num:i+1}))));
+  const cpuN=shuffle(Object.keys(NAT)).slice(0,3);
+  const P=(name,nats,leader,cpu)=>({name,nats,leader,cpu,deck:mk(nats),hand:[],discard:[],won:[],taken:[],score:0,claims:0,revealed:null});
+  const landDeck=shuffle(LANDS.map((L,i)=>({...L,id:i,sides:[[],[]],imm:[false,false],forge:[0,0],curse:[false,false]})));
+  G={p:[P('あなた',nats,leader,false),opp?{...P('相手',opp.nats,opp.leader,false),remote:true}:P('CPU',cpuN,cpuN[Math.random()*3|0],true)],
+     lands:landDeck.splice(0,5),landDeck,stat:(typeof STATHOOK!=='undefined'?STATHOOK():null),cur:Math.random()<.5?0:1,log:[],over:false,turnNo:0};
+  for(const p of G.p) for(let i=0;i<6;i++) p.hand.push(p.deck.pop());
+  log(`${G.p[G.cur].name}の先攻で開始`);
+  render(); turn();
+}
+function log(s){G.log.unshift(s); if(G.log.length>40) G.log.pop(); render();}
+function draw(pi,n){const P=G.p[pi];let k=0;for(let i=0;i<n;i++){if(!P.deck.length&&P.discard.length){P.deck=shuffle(P.discard);P.discard=[];log(`${P.name}：墓地を切り直して山札に戻す`);}if(!P.deck.length)break;P.hand.push(P.deck.pop());k++}return k}
+
+/* ---------- roles ---------- */
+const val=c=>c.mark?(c.num%10)+1:c.num;
+function evalRole(cs,pi){
+  if(cs.length<3) return null;
+  const L=G.p[pi].leader, same=cs.every(c=>c.nat===cs[0].nat);
+  const opts=cs.map(c=>c.wild?[7,8,9,10]:[val(c)]);
+  let best=null;
+  for(const a of opts[0]) for(const b of opts[1]) for(const d of opts[2]){
+    const v=[a,b,d].sort((x,y)=>x-y); let r=null;
+    if(v[0]===v[1]&&v[1]===v[2]) r={kind:'same',name:'同陣',pts:L==='dragon'?4:3};
+    else{const r1=v[1]-v[0]===1&&v[2]-v[1]===1, r2=L==='elf'&&v[1]-v[0]===2&&v[2]-v[1]===2;
+      if(r1||r2) r={kind:'run',name:(same?'一国':'')+(r2&&!r1?'森の列陣':'列陣'),pts:(same||(L==='human'&&new Set(cs.map(c=>c.nat)).size===3))?2:1};}
+    if(r&&(!best||r.pts>best.pts)){r.vals=v;best=r;}
+  }
+  return best;
+}
+function possible(cs,pi){ // can the side still become a role with one more card?
+  if(cs.length>=3) return false; if(cs.length<2) return true;
+  for(let v=1;v<=10;v++) if(evalRole([...cs,{nat:cs[0].nat,num:v}],pi)) return true; return false;
+}
+const movable=(l,s)=>!l.imm[s]&&G.p[s].leader!=='dwarf';
+const affect=(l,s)=>!l.imm[s];
+const alive=l=>G.lands.includes(l);
+
+/* ---------- choices ---------- */
+async function ask(pi,req){
+  if(G.p[pi].remote) return remoteAsk(pi,req);
+  if(G.p[pi].cpu){ const r=aiPick(req); if(LIVE&&r&&req.type==='land'){ui.glow=r.id; render(); await wait(450); ui.glow=null;} return r; }
+  return new Promise(res=>{ui.req=req;ui.resolve=res;if(req.type==='card') ui.modal='pick';render();});
+}
+function aiPick(req){
+  const list=req.type==='land'?req.cands:req.cards;
+  if(!list.length) return null;
+  let best=null,bs=-1e9; for(const x of list){const s=(req.score?req.score(x):0)+Math.random()*.3*NZ(); if(s>bs){bs=s;best=x}}
+  if(req.skip&&req.minScore!=null&&bs<req.minScore) return null;
+  return best;
+}
+const chooseLand=(pi,prompt,cands,score,skip)=>cands.length?ask(pi,{type:'land',prompt,cands,score,skip}):Promise.resolve(null);
+const chooseCard=(pi,prompt,cards,score,skip)=>cards.length?ask(pi,{type:'card',prompt,cards,score,skip}):Promise.resolve(null);
+function resolveReq(v){const r=ui.resolve;ui.req=null;ui.resolve=null;ui.modal=null;render();r&&r(v);}
+
+/* ---------- AI helpers ---------- */
+function threat(l,s){const c=l.sides[s];return c.length*2+(possible(c,s)?3:-2)+l.pts}
+function cardValue(pi,c){ // how useful a card in hand is: matches what is on our sides
+  let v=c.num/10;
+  for(const l of G.lands){const s=l.sides[pi]; if(s.length===2&&evalRole([...s,c],pi)) v+=4; else if(s.length===1&&possible([...s,c],pi)) v+=1;}
+  return v;
+}
+function placeScore(pi,c,l){
+  const cc=(c.nat==='dragon'&&c.num===9)?{...c,wild:true,mark:0}:{...c,mark:0};
+  const s=[...l.sides[pi],cc];
+  if(s.length===3){const r=evalRole(s,pi); if(!r) return -4+Math.random(); let p=r.pts+l.pts+(l.bf?l.bf(r,s,l,pi):0)+l.forge[pi];
+    if(c.num===10&&c.nat==='human') p*=new Set(s.map(x=>x.nat)).size===3?3:2; else if(c.num===10&&c.nat!=='dragon') p*=2;
+    if(l.curse[pi]) p=Math.floor(p/2); return 20+p*2;}
+  let v=s.length===2?(possible(s,pi)?4:-3):1.5;
+  v+=l.pts*.8+(l.ef?.6:0)+(l.bf?.5:0);
+  if(l.sides[1-pi].length===2) v+=1.2;
+  if(l.forge[pi]&&s.length===2) v+=1+l.forge[pi]*.5;
+  if(l.curse[pi]) v-=2;
+  if(c.nat==='dwarf'&&c.num===5&&s.length<=2) v+=1.5;
+  if(c.nat==='beast'&&c.num===1&&l.sides[pi].some(x=>x.nat==='beast')) v+=2;
+  if(s.length===2&&s[0].num===s[1].num) v+=.8;
+  return v+Math.random()*1.2*NZ();
+}
+
+/* ---------- core ---------- */
+async function turn(){
+  if(G.over) return;
+  const pi=G.cur, P=G.p[pi], O=G.p[1-pi];
+  if(!P.hand.length||!G.lands.length) return endGame();
+  G.turnNo++;
+  for(const l of G.lands) if(l.forge[pi]&&l.forge[pi]<3&&l.sides[pi].length===2){l.forge[pi]++; log(`${P.name}：${l.nm}の鍛えが${l.forge[pi]}に`);}
+  // fairy: the opponent of a fairy leader keeps one card revealed
+  for(const [a,b] of [[0,1],[1,0]]) if(false){const h=G.p[b].hand; if(!h.some(c=>c.id===G.p[b].revealed)) G.p[b].revealed=h.length?h[Math.random()*h.length|0].id:null;}
+  render();
+  let tideUsed=false, swapped=false, marchUsed=false;
+  if(P.cpu){ await wait(650); if(P.leader==='mermaid'){tideUsed=true; await aiTide(pi);} }
+  while(true){
+    G.lastPlaced=null;
+    const mv=P.cpu?aiPlace(pi):P.remote?await remotePlace(pi,P.leader==='mermaid'&&!tideUsed):await new Promise(res=>{ui.req={type:'place',tide:P.leader==='mermaid'&&!tideUsed};ui.resolve=res;render();});
+    if(mv==='tide'){tideUsed=true; await tide(pi); if(!G.lands.length) return endGame(); continue;}
+    if(mv.swap){ swapTop(pi,mv.card,mv.land); swapped=true; break; }
+    await playCard(pi,mv.card,mv.land);
+    if(P.extra>0&&P.hand.length&&G.lands.length&&!G.over&&!marchUsed){marchUsed=true; P.extra--; log(`${P.name}：進軍でもう1枚置く`); if(P.cpu) await wait(500); continue;}
+    break;
+  }
+  if(G.over) return;
+  if(P.leader==='fairy'&&G.lastPlaced&&G.lastPlaced.nat==='fairy'&&G.lands.length) await flowerMark(pi,'盟約',true);
+  if(G.over) return;
+  if(!swapped) draw(pi,1);
+  const empty=p=>!p.hand.length&&!p.deck.length&&!p.discard.length;
+  if(!G.lands.length||G.turnNo>=200||G.p.some(empty)) return endGame();
+  G.cur=1-pi; render(); turn();
+}
+function aiPlace(pi){
+  const P=G.p[pi]; let best=null,bs=-1e9;
+  for(const c of P.hand) for(const l of G.lands){const s=placeScore(pi,c,l); if(s>bs){bs=s;best={card:c,land:l}}}
+  for(const l of G.lands){const s=l.sides[pi]; if(!s.length||possible(s,pi)) continue;
+    if(OPT.diff==='easy') break;
+    for(const c of P.hand){const ns=[...s.slice(0,-1),c]; if(possible(ns,pi)){const v=3.5+l.pts+Math.random(); if(v>bs){bs=v;best={card:c,land:l,swap:true}}}}}
+  return best;
+}
+function swapTop(pi,card,land){
+  const P=G.p[pi], s=land.sides[pi], old=s.pop();
+  P.hand=P.hand.filter(c=>c.id!==card.id); card.mark=0; card.wild=false; s.push(card); old.mark=0; old.wild=false; P.hand.push(old);
+  log(`${P.name}：入れ替え（${land.nm}の${cname(old)}を手札に戻し、${cname(card)}を置く）`);
+}
+async function tide(pi){
+  const src=G.lands.filter(l=>l.sides[pi].length);
+  const a=await chooseLand(pi,'潮流：動かす自分のカードがある土地',src,null,true); if(!a) return;
+  const b=await chooseLand(pi,'潮流：移す先の土地',G.lands.filter(l=>l!==a&&l.sides[pi].length<3),null,true); if(!b) return;
+  const c=a.sides[pi].pop(); b.sides[pi].push(c); log(`${G.p[pi].name}：潮流で${cname(c)}を${b.nm}へ`);
+  if(b.sides[pi].length===3) draw(pi,1);
+  await resolveSide(b,pi);
+}
+async function aiTide(pi){
+  for(const a of G.lands){const t=a.sides[pi]; if(!t.length) continue; const c=t[t.length-1];
+    for(const b of G.lands){ if(b===a||b.sides[pi].length!==2) continue;
+      if(evalRole([...b.sides[pi],c],pi)){t.pop(); b.sides[pi].push(c); log(`CPU：潮流で${cname(c)}を${b.nm}へ`); draw(pi,1); await resolveSide(b,pi); return;}}}
+  let best=null,bs=2;
+  for(const a of G.lands){const t=a.sides[pi]; if(!t.length) continue; const c=t[t.length-1];
+    const loss=t.length===2&&possible(t,pi)?compCount(t,pi)-compCount(t.slice(0,-1),pi)*0+2:(possible(t,pi)?0:-2);
+    for(const b of G.lands){ if(b===a||b.sides[pi].length!==1) continue; const nb=[...b.sides[pi],c];
+      if(!possible(nb,pi)) continue; const gain=compCount(nb,pi)+b.pts+(b.forge[pi]?1:0)-loss;
+      if(gain>bs){bs=gain;best={a,b,c};}}}
+  if(best){best.a.sides[pi].pop(); best.b.sides[pi].push(best.c); log(`CPU：潮流で${cname(best.c)}を${best.b.nm}へ`);}
+}
+async function playCard(pi,card,land){
+  const P=G.p[pi]; P.hand=P.hand.filter(c=>c.id!==card.id);
+  const side=land.sides[pi], under=side[side.length-1];
+  card.mark=0; card.wild=(card.nat==='dragon'&&card.num===9); G.lastPlaced=card;
+  side.push(card); log(`${P.name}：${cname(card)}を${land.nm}に置く`);
+  if(P.leader==='beast'&&under&&under.nat===card.nat&&draw(pi,1)) log(`${P.name}：獣人の盟約で1枚引く`);
+  SFX.place(); if(!P.cpu) await wait(150); else await wait(500);
+  await resolveSide(land,pi);
+  if(card.num%2&&!G.over) await onEnter(pi,card,land);
+  return card;
+}
+async function resolveSide(land,si){
+  if(!alive(land)) return;
+  const s=land.sides[si]; if(s.length<3) return;
+  const r=evalRole(s,si);
+  if(r) await claim(land,si,r);
+  else{const b=s.shift(); b.mark=0; b.wild=false; G.p[si].discard.push(b); SFX.fall(); log(`${land.nm}：陣形にならず${cname(b)}が墓地へ`);}
+}
+async function claim(land,si,role){
+  const P=G.p[si], o=1-si, s=land.sides[si], top=s[s.length-1], cs=[...s];
+  // triggers: the top card, plus (dwarf soldier) every even card under it
+  const trig=[top]; if(top.nat==='dwarf'&&top.num===2) for(const c of s.slice(0,-1)) if(c.num%2===0) trig.push(c);
+  let bonus=0,mult=1;
+  for(const t of trig){
+    if(t.num===2&&!(t.nat==='dwarf')) bonus+=1;
+    if(t.num===10){ if(t.nat==='human') mult=Math.max(mult,new Set(cs.map(x=>x.nat)).size===3?3:2); else if(t.nat!=='dragon') mult=Math.max(mult,2); }
+  }
+  if(P.leader==='demon'&&P.discard.length>=8) bonus+=1;
+  const lb=land.bf?land.bf(role,s,land,si):0; bonus+=lb;
+  const fg=land.forge[si]; bonus+=fg;
+  let pts=(role.pts+bonus+land.pts)*mult;
+  const cursed=land.curse[si]; if(cursed) pts=G.p[o].leader==='demon'?0:Math.floor(pts/2);
+  P.score+=pts; P.claims++; P.taken.push({land,cards:cs,pts}); G.stat&&G.stat.claim(si,pts,cs);
+  netEmit({t:'claim',landId:land.id,pts}); if(LIVE) await flyLand(land,si,pts);
+  for(const c of land.sides[o]){c.mark=0;c.wild=false;} G.p[o].discard.push(...land.sides[o]);
+  for(const c of s){c.mark=0;c.wild=false;} P.won.push(...s);
+  const i=G.lands.indexOf(land);
+  let nl=null;
+  if(land.ef==='watch'&&G.landDeck.length>1){
+    const tp=G.landDeck.splice(-Math.min(3,G.landDeck.length));
+    nl=await chooseCard(si,'見張り塔：次に場に出す土地を選ぶ',tp,x=>x.pts+(x.bf?1.5:0)+(x.ef?1:0),false);
+    G.landDeck.unshift(...tp.filter(x=>x!==nl));
+    log(`${land.nm}の効果：${P.name}が次の土地に${nl.nm}を選ぶ`);
+  } else nl=G.landDeck.pop();
+  if(nl) G.lands[i]=nl; else G.lands.splice(i,1);
+  log(`★ ${P.name}が${land.nm}を攻略：${role.name} ${pts}点${lb?`（${land.b}）`:''}${fg?`（鍛え+${fg}）`:''}${mult>2?'（同盟の王で3倍）':mult>1?'（王で2倍）':''}${cursed?'（呪いで半分）':''}`);
+  if(land.ef==='search'){const look=P.deck.slice(-5);
+    const c=await chooseCard(si,'港町：山札の上5枚から手札に加えるカード',look,x=>cardValue(si,x),false);
+    if(c){P.deck=P.deck.filter(x=>x.id!==c.id); P.hand.push(c); shuffle(P.deck); log(`${land.nm}の効果：${P.name}は山札から1枚手札に加え、山札を切る`);}}
+  if(land.ef==='mulligan'){let k=0;
+    for(;k<3&&P.hand.length;k++){const c=await chooseCard(si,`宿場：山札に戻して引き直すカード（${k}/3・終わるならスキップ）`,P.hand,x=>1.2-cardValue(si,x),true); if(!c)break;
+      P.hand=P.hand.filter(x=>x.id!==c.id); P.deck.unshift(c);}
+    if(k){shuffle(P.deck); draw(si,k);} log(`${land.nm}の効果：${P.name}は手札${k}枚を引き直す`);}
+  if(land.ef==='recover') await recover(si,1);
+  if(land.ef==='trade'){const O=G.p[o];
+    if(P.hand.length&&O.hand.length){const mine=await chooseCard(si,'市場：相手に渡す手札',P.hand,x=>-cardValue(si,x),false);
+      const theirs=O.hand[Math.random()*O.hand.length|0];
+      P.hand=P.hand.filter(x=>x.id!==mine.id); O.hand=O.hand.filter(x=>x.id!==theirs.id); P.hand.push(theirs); O.hand.push(mine);
+      log(`${land.nm}の効果：${P.name}は相手と手札を1枚交換`);}}
+  if(land.ef==='march'){P.extra=(P.extra||0)+1; log(`${land.nm}の効果：${P.name}は次のターンに2枚置ける`);}
+  if(trig.length>1) log(`${cname(top)}の重ね打ち：下の${trig.slice(1).map(cname).join('・')}の攻略時効果も発動`);
+  for(const t of trig) if(t.num%2===0&&!G.over) await onComplete(si,t,cs);
+}
+async function recover(pi,n){
+  for(let k=0;k<n;k++){const P=G.p[pi];
+    const c=await chooseCard(pi,'墓地から手札に戻すカード',P.discard,x=>cardValue(pi,x),true); if(!c) return;
+    P.discard=P.discard.filter(x=>x.id!==c.id); P.hand.push(c); log(`${P.name}：${cname(c)}を手札に戻す`);}
+}
+async function discardFromHand(pi,n,label){
+  for(let k=0;k<n;k++){const P=G.p[pi];
+    const c=await chooseCard(pi,label||'手札から捨てるカード',P.hand,x=>-cardValue(pi,x),false); if(!c) return;
+    P.hand=P.hand.filter(x=>x.id!==c.id); P.discard.push(c); log(`${P.name}：${cname(c)}を墓地へ`);}
+}
+// place one more card from hand; returns the placed card (or null). noAbility: skip the enter ability
+async function placeExtra(pi,cands,label,noAbility){
+  const P=G.p[pi]; if(!P.hand.length) return null;
+  const okLands=cands.filter(l=>alive(l)&&l.sides[pi].length<3); if(!okLands.length) return null;
+  const c=await chooseCard(pi,label+'：置くカード（やめるならスキップ）',P.hand,x=>Math.max(...okLands.map(l=>placeScore(pi,x,l))),true); if(!c) return null;
+  const l=await chooseLand(pi,label+'：置く土地',okLands.filter(x=>alive(x)),x=>placeScore(pi,c,x),false); if(!l) return null;
+  if(noAbility){P.hand=P.hand.filter(x=>x.id!==c.id); c.mark=0; c.wild=(c.nat==='dragon'&&c.num===9); l.sides[pi].push(c); log(`${P.name}：${cname(c)}を${l.nm}に置く（能力なし）`); await resolveSide(l,pi); return c;}
+  return playCard(pi,c,l);
+}
+const ABV={1:1,3:2.2,5:2,7:1.6,9:3};
+function compCount(cs,pi){ if(cs.length!==2) return cs.length<2?5:0; let k=0; for(let v=1;v<=10;v++) if(evalRole([...cs,{nat:cs[0].nat,num:v}],pi)) k++; return k; }
+async function flowerMark(pi,tag,optional){
+  const cands=[]; for(const l of G.lands) for(const s of [0,1]){const side=l.sides[s]; if(side.length&&!side[side.length-1].mark) cands.push({l,s,c:side[side.length-1]});}
+  if(!cands.length) return;
+  const score=x=>{const side=x.l.sides[x.s]; const b=compCount(side,x.s); x.c.mark=1; const a=compCount(side,x.s); x.c.mark=0;
+    return x.s===pi?(a-b)*1.5:(b-a)*1.5+(side.length===2?1:0)+.5;};
+  const pick=await chooseCard(pi,'花の印：印を付けるカード（場の一番上）',cands.map(x=>({...x.c,_x:x})),y=>score(y._x),true);
+  if(!pick||(optional&&G.p[pi].cpu&&score(pick._x)<.8)) return log(`${tag}：印を付けない`);
+  pick._x.c.mark=1; log(`${tag}：${pick._x.l.nm}の${cname(pick._x.c)}に花の印（${val(pick._x.c)}として扱う）`);
+  if(G.stat) G.stat.ev('fairy_mark');
+}
+async function onEnter(pi,c,land){
+  await fx(c,alive(land)?land:null);
+  const P=G.p[pi], o=1-pi, O=G.p[o], n=c.num, nat=c.nat, here=alive(land);
+  const tag=`${cname(c)}の出陣効果`;
+  if(n===1){
+    if(nat==='fairy') return flowerMark(pi,tag,false);
+    if(nat==='beast'){ if(!here||!land.sides[pi].some(x=>x!==c&&x.nat==='beast')) return log(`${tag}：群れがいない`);
+      log(tag+'：群れ呼び'); if(G.stat) G.stat.ev('beast_pack'); return placeExtra(pi,[land],'群れ呼び');}
+    if(nat==='demon'){
+      const cands=[]; for(const l of G.lands){const side=l.sides[pi]; const t=side[side.length-1]; if(t&&t!==c) cands.push({l,c:t});}
+      const score=x=>(x.c.num%2?(ABV[x.c.num]||0):0)+(!possible(x.l.sides[pi],pi)?2:0)-(x.l.sides[pi].length===2&&possible(x.l.sides[pi],pi)?3:0);
+      const pick=await chooseCard(pi,'生贄：墓地に送る自分のカード',cands.map(x=>({...x.c,_x:x})),y=>score(y._x),true);
+      if(!pick||(P.cpu&&score(pick._x)<1.2)) return log(`${tag}：生贄なし`);
+      const {l,c:t}=pick._x; l.sides[pi].pop(); t.mark=0; t.wild=false; P.discard.push(t); log(`${tag}：${cname(t)}を生贄に`);
+      if(G.stat) G.stat.ev('demon_sac');
+      if(t.num%2) await onEnter(pi,t,l); return;}
+    draw(pi,1); return log(`${tag}：1枚引く`);
+  }
+  if(n===3){
+    if(nat==='elf'){ const look=P.deck.slice(-3); if(!look.length) return log(`${tag}：山札がない`);
+      const pk=await chooseCard(pi,'先読み：手札に加えるカード',look,x=>cardValue(pi,x),false);
+      P.deck=P.deck.filter(x=>x.id!==pk.id); P.hand.push(pk); return log(`${tag}：山札の上3枚から1枚を手札に`);}
+    if(nat==='mermaid'){
+      const ls=G.lands.filter(l=>l.sides[pi].length&&l.sides[o].length&&movable(l,o));
+      const l=await chooseLand(pi,'人魚の斥候：一番上を入れ替える土地',ls,x=>threat(x,o),true); if(!l) return log(`${tag}：対象なし`);
+      const a=l.sides[pi].pop(), b=l.sides[o].pop(); l.sides[pi].push(b); l.sides[o].push(a);
+      log(`${tag}：${l.nm}で${cname(a)}と${cname(b)}を入れ替え`);
+      await resolveSide(l,pi); await resolveSide(l,o); return;}
+    const src=G.lands.filter(l=>l.sides[o].length&&movable(l,o));
+    const a=await chooseLand(pi,'斥候：動かす相手のカードがある土地',src,x=>threat(x,o),true); if(!a) return log(`${tag}：対象なし`);
+    const dst=G.lands.filter(l=>l!==a&&l.sides[o].length<3);
+    const top=a.sides[o][a.sides[o].length-1];
+    const b=await chooseLand(pi,'斥候：移す先の土地',dst,x=>{const s=[...x.sides[o],top]; if(s.length===3) return evalRole(s,o)?-50:6; return possible(s,o)?-s.length:2;},false); if(!b) return;
+    a.sides[o].pop(); b.sides[o].push(top); log(`${tag}：${cname(top)}を${a.nm}から${b.nm}へ`);
+    await resolveSide(b,o); return;
+  }
+  if(n===5){
+    if(nat==='dwarf'){ if(here&&land.forge[pi]<3){land.forge[pi]++; log(`${tag}：${land.nm}に鍛え（${land.forge[pi]}）`); if(G.stat) G.stat.ev('dwarf_forge');} return;}
+    if(!here||!land.sides[o].length) return log(`${tag}：対象なし`);
+    if(!movable(land,o)) return log(`${tag}：相手のカードは動かせない`);
+    const b=land.sides[o].pop(); b.mark=0; b.wild=false; O.hand.push(b); return log(`${tag}：${cname(b)}を相手の手札へ押し返す`);
+  }
+  if(n===7){
+    if(nat==='mermaid'){
+      const cands=[]; for(const l of G.lands){const side=l.sides[pi]; const t=side[side.length-1]; if(t&&t!==c) cands.push({l,c:t});}
+      const score=x=>(!possible(x.l.sides[pi],pi)?4:0)+(x.c.num%2?(ABV[x.c.num]||0):0)-(x.l.sides[pi].length===2&&possible(x.l.sides[pi],pi)?3:0)-(x.l.forge[pi]?2:0);
+      const pick=await chooseCard(pi,'還流：手札に戻す自分のカード',cands.map(x=>({...x.c,_x:x})),y=>score(y._x),true);
+      if(!pick||(P.cpu&&score(pick._x)<1.5)) return log(`${tag}：戻さない`);
+      const {l,c:t}=pick._x; l.sides[pi].pop(); t.mark=0; t.wild=false; P.hand.push(t); if(G.stat) G.stat.ev('mermaid_return'); return log(`${tag}：${cname(t)}を手札に戻す`);}
+    if(nat==='demon'){
+      const ls=G.lands.filter(l=>!l.curse[o]);
+      const l=await chooseLand(pi,'呪縛：呪いを置く相手の土地',ls,x=>threat(x,o)+x.pts,false); if(!l) return log(`${tag}：対象なし`);
+      l.curse[o]=true; if(G.stat) G.stat.ev('demon_curse'); return log(`${tag}：${l.nm}の相手側に呪い`);}
+    log(tag); return recover(pi,1);
+  }
+  if(n===9){
+    if(nat==='dragon'){ return log(`${tag}：竜化（この土地では7〜10として扱う）`); }
+    const placed=await placeExtra(pi,G.lands.filter(l=>l!==land),'将軍');
+    if(nat==='beast'&&placed&&placed.nat==='beast'){ log(`${tag}：狩りの号令でさらに1枚`); if(G.stat) G.stat.ev('beast_hunt'); await placeExtra(pi,G.lands,'狩りの号令'); }
+    return;
+  }
+}
+async function onComplete(pi,c,cs){
+  await fx(c,null);
+  const P=G.p[pi], o=1-pi, O=G.p[o], n=c.num, nat=c.nat, tag=`${cname(c)}の攻略時効果`;
+  if(n===4){
+    if(nat==='human'){ const ns=new Set(cs.map(x=>x.nat)); const look=P.deck.slice(-5).filter(x=>!ns.has(x.nat));
+      if(!look.length) return log(`${tag}：該当カードなし`);
+      const pk=await chooseCard(pi,'交易：手札に加える他国のカード',look,x=>cardValue(pi,x),false);
+      P.deck=P.deck.filter(x=>x.id!==pk.id); P.hand.push(pk); shuffle(P.deck); if(G.stat) G.stat.ev('human_trade'); return log(`${tag}：山札から${NAT[pk.nat].n}のカードを手札に`);}
+    const k=draw(pi,2); log(`${tag}：${k}枚引く`); return discardFromHand(pi,1);}
+  if(n===6){
+    if(nat==='elf'){ log(tag+'：芽吹き'); if(G.stat) G.stat.ev('elf_sprout'); await placeExtra(pi,G.lands,'芽吹き',true); return; }
+    const ls=G.lands.filter(l=>l.sides[o].length&&affect(l,o));
+    const l=await chooseLand(pi,'魔術師：一番上を墓地に送る土地',ls,x=>threat(x,o),true); if(!l) return log(`${tag}：対象なし`);
+    const b=l.sides[o].pop(); b.mark=0; b.wild=false; O.discard.push(b); return log(`${tag}：${l.nm}の${cname(b)}を墓地へ`);
+  }
+  if(n===8){
+    if(nat==='fairy'){ let k=0;
+      for(const l of G.lands){ if(!movable(l,o)) continue; const keep=l.sides[o].filter(x=>!x.mark), back=l.sides[o].filter(x=>x.mark);
+        for(const b of back){b.mark=0; O.hand.push(b); k++;} l.sides[o]=keep; }
+      if(G.stat&&k) G.stat.ev('fairy_bounce',k); return log(`${tag}：印の付いた${k}枚を相手の手札に押し返す`);}
+    if(!O.hand.length) return log(`${tag}：相手の手札がない`);
+    const t=await chooseCard(pi,'相手の手札から墓地に送らせるカード',O.hand,x=>cardValue(o,x),false);
+    O.hand=O.hand.filter(x=>x.id!==t.id); O.discard.push(t); return log(`${tag}：${cname(t)}を墓地に送らせる`);
+  }
+  if(n===10){
+    if(nat==='dragon'){
+      const ls=G.lands.filter(l=>l.sides[o].length&&affect(l,o));
+      const l=await chooseLand(pi,'竜の王：相手側を丸ごと墓地に送る土地',ls,x=>threat(x,o)+x.sides[o].length,true); if(!l) return log(`${tag}：対象なし`);
+      for(const x of l.sides[o]){x.mark=0;x.wild=false;} O.discard.push(...l.sides[o]); l.sides[o]=[]; return log(`${tag}：${l.nm}の相手側を一掃`);}
+    return;
+  }
+}
+function endGame(){
+  G.over=true; ui.req=null; ui.modal='end'; render();
+}
+
+/* ---------- online play: the host runs the game, the guest only sees and answers ---------- */
+const NET={role:null,peer:null,conn:null,code:'',status:'',err:'',pending:null,qt:null};
+const CODECH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const newCode=()=>Array.from({length:4},()=>CODECH[Math.random()*CODECH.length|0]).join('');
+// a tiny stand-in for PeerJS over BroadcastChannel, used only for local two-window testing (?mock)
+class MockPeer{
+  constructor(id){this.id=id||('g'+Math.random().toString(36).slice(2,8)); this.h={}; this.ch=new BroadcastChannel('legion-mock'); this.conns={};
+    this.ch.onmessage=e=>{const m=e.data; if(m.to!==this.id) return;
+      if(m.k==='open'){const c=this._conn(m.from); this.conns[m.from]=c; this.ch.postMessage({to:m.from,from:this.id,k:'ack'}); (this.h.connection||(()=>{}))(c); setTimeout(()=>c._emit('open'),0);}
+      else if(m.k==='ack'){this.conns[m.from]&&this.conns[m.from]._emit('open');}
+      else if(m.k==='data'){this.conns[m.from]&&this.conns[m.from]._emit('data',m.d);}
+      else if(m.k==='close'){this.conns[m.from]&&this.conns[m.from]._emit('close');}};
+    setTimeout(()=>(this.h.open||(()=>{}))(this.id),10);}
+  on(k,f){this.h[k]=f;}
+  _conn(peer){const self=this, h={}; return {peer,on(k,f){h[k]=f;},_emit(k,d){h[k]&&h[k](d);},send(d){self.ch.postMessage({to:peer,from:self.id,k:'data',d:JSON.parse(JSON.stringify(d))});},close(){self.ch.postMessage({to:peer,from:self.id,k:'close'});}};}
+  connect(id){const c=this._conn(id); this.conns[id]=c; this.ch.postMessage({to:id,from:this.id,k:'open'}); return c;}
+  destroy(){this.ch.close();}
+}
+const MOCK=/[?&]mock/.test(location.search);
+const PeerCls=()=>MOCK?MockPeer:(window.Peer||null);
+function netReset(msg){ try{NET.conn&&NET.conn.close();}catch(e){} try{NET.peer&&NET.peer.destroy();}catch(e){}
+  Object.assign(NET,{role:null,peer:null,conn:null,code:'',status:'',pending:null}); NET.err=msg||''; }
+function netSend(m){ try{NET.conn&&NET.conn.send(m);}catch(e){} }
+function netHost(){
+  const P=PeerCls(); if(!P){NET.err='通信の部品を読み込めませんでした。ページを開き直してください。';return render();}
+  NET.err=''; NET.code=newCode(); NET.role='host'; NET.status='部屋を準備しています…'; render();
+  const peer=new P('legion-'+NET.code); NET.peer=peer;
+  peer.on('open',()=>{NET.status='相手を待っています'; render();});
+  peer.on('error',e=>{ if(e&&e.type==='unavailable-id'){ netReset(); return netHost(); } netReset('部屋を作れませんでした（'+(e&&e.type||'通信エラー')+'）。少し待ってもう一度試してください。'); render(); });
+  peer.on('connection',conn=>{ if(NET.conn){conn.close();return;} NET.conn=conn;
+    conn.on('data',m=>netOnHost(m));
+    conn.on('close',()=>netLost());
+  });
+}
+function netJoin(code){
+  const P=PeerCls(); if(!P){NET.err='通信の部品を読み込めませんでした。ページを開き直してください。';return render();}
+  code=(code||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(code.length!==4){NET.err='合言葉は4文字です。';return render();}
+  NET.err=''; NET.code=code; NET.role='guest'; NET.status='部屋に入っています…'; render();
+  const peer=new P(); NET.peer=peer;
+  peer.on('open',()=>{ const conn=peer.connect('legion-'+code,{reliable:true}); NET.conn=conn;
+    const to=setTimeout(()=>{ if(NET.role==='guest'&&!G){ netReset('部屋が見つかりませんでした。合言葉を確かめてください。'); render(); } },12000);
+    conn.on('open',()=>{ clearTimeout(to); NET.status='対戦の開始を待っています'; render(); netSend({t:'hello',nats:setup.sel,leader:setup.leader}); });
+    conn.on('data',m=>netOnGuest(m));
+    conn.on('close',()=>netLost());
+  });
+  peer.on('error',e=>{ netReset(e&&e.type==='peer-unavailable'?'部屋が見つかりませんでした。合言葉を確かめてください。':'つながりませんでした（'+(e&&e.type||'通信エラー')+'）。'); render(); });
+}
+function netLost(){ if(!NET.role) return; const wasGame=!!G; netReset(wasGame?'相手との通信が切れました。':''); if(G){G.over=true; ui.req=null; ui.resolve=null; ui.modal='lost';} render(); }
+function netQuit(){ netSend({t:'bye'}); netReset(); }
+/* ----- host side ----- */
+function netOnHost(m){
+  if(m.t==='hello'&&!G){ NET.status=''; newGame(setup.sel,setup.leader,{nats:m.nats,leader:m.leader}); return; }
+  if(m.t==='ans'&&NET.pending){ const p=NET.pending; NET.pending=null; p.res(m.v); }
+  if(m.t==='bye'){ netLost(); }
+}
+const sc=c=>({id:c.id,nat:c.nat,num:c.num,mark:c.mark||0,wild:!!c.wild});
+const sl=l=>({id:l.id,nm:l.nm,pts:l.pts,b:l.b,e:l.e});
+function viewFor(pi){
+  const o=1-pi, sw=a=>[a[pi],a[o]];
+  const pl=(P,hide)=>({name:P.name,nats:P.nats,leader:P.leader,score:P.score,claims:P.claims,extra:P.extra||0,revealed:null,remote:false,
+    hand:hide?P.hand.map(()=>({id:-1,nat:'human',num:1})):P.hand.map(sc),deck:P.deck.map(()=>({id:-1,nat:'human',num:1})),
+    discard:P.discard.map(sc),won:[],taken:P.taken.map(t=>({land:sl(t.land),cards:t.cards.map(sc),pts:t.pts}))});
+  return {p:[pl(G.p[pi],false),pl(G.p[o],true)],
+    lands:G.lands.map(l=>({...sl(l),ef:l.ef,sides:[l.sides[pi].map(sc),l.sides[o].map(sc)],forge:sw(l.forge),curse:sw(l.curse),imm:sw(l.imm)})),
+    landDeck:G.landDeck.length,cur:G.cur===pi?0:1,turnNo:G.turnNo,over:G.over,
+    log:G.log.map(s=>s.replace(/あなた|相手/g,x=>x==='あなた'?'相手':'あなた'))};
+}
+function netPush(){ if(NET.role!=='host'||!NET.conn||!G) return; clearTimeout(NET.qt); NET.qt=setTimeout(()=>netSend({t:'state',v:viewFor(1)}),0); }
+function netPushNow(){ if(NET.role!=='host'||!NET.conn||!G) return; clearTimeout(NET.qt); netSend({t:'state',v:viewFor(1)}); }
+function netEmit(m){ if(NET.role==='host'&&NET.conn&&G) netSend(m); }
+function netAsk(pi,req){ // returns the raw answer value from the guest
+  netPushNow();
+  let r;
+  if(req.type==='place') r={type:'place',tide:req.tide};
+  else if(req.type==='land') r={type:'land',prompt:req.prompt,skip:!!req.skip,cids:req.cands.map(l=>l.id)};
+  else r={type:'card',prompt:req.prompt,skip:!!req.skip,cards:req.cards.map(c=>c.nm?{land:1,...sl(c)}:{...sc(c),_x:c._x?{l:{nm:c._x.l.nm},s:c._x.s===pi?0:1}:undefined})};
+  return new Promise(res=>{ NET.pending={res}; netSend({t:'req',r}); });
+}
+async function remotePlace(pi,tide){
+  const P=G.p[pi];
+  for(;;){ const v=await netAsk(pi,{type:'place',tide});
+    if(v==='tide'&&tide) return 'tide';
+    const card=v&&P.hand.find(c=>c.id===v.cardId), land=v&&G.lands.find(l=>l.id===v.landId);
+    if(card&&land&&(v.swap?land.sides[pi].length>0:land.sides[pi].length<3)) return v.swap?{card,land,swap:true}:{card,land}; }
+}
+async function remoteAsk(pi,req){
+  const v=await netAsk(pi,req);
+  if(v==null) return req.skip?null:(req.type==='land'?req.cands[0]:req.cards[0]);
+  if(req.type==='land') return req.cands.find(l=>l.id===v)||(req.skip?null:req.cands[0]);
+  return req.cards[v]||(req.skip?null:req.cards[0]);
+}
+/* ----- guest side ----- */
+function restoreView(v){
+  const lands=v.lands.map(l=>({...l,bf:LANDS[l.id]&&LANDS[l.id].bf}));
+  const fix=p=>({...p,taken:p.taken.map(t=>({...t,land:{...t.land,bf:LANDS[t.land.id]&&LANDS[t.land.id].bf}}))});
+  return {p:v.p.map(fix),lands,landDeck:Array(v.landDeck).fill(0),cur:v.cur,turnNo:v.turnNo,over:v.over,log:v.log,remoteView:true};
+}
+function netOnGuest(m){
+  if(m.t==='state'){ G=restoreView(m.v);
+    if(ui.req&&ui.req.type==='land') ui.req.cands=ui.req.cids.map(id=>G.lands.find(l=>l.id===id)).filter(Boolean);
+    if(ui.sel) ui.sel=G.p[0].hand.find(c=>c.id===ui.sel.id)||null;
+    if(G.over&&!ui.req) ui.modal='end';
+    NET.status=''; render(); return; }
+  if(m.t==='req'){ const r=m.r; let req;
+    if(r.type==='place') req={type:'place',tide:r.tide};
+    else if(r.type==='land') req={type:'land',prompt:r.prompt,skip:r.skip,cids:r.cids,cands:r.cids.map(id=>G.lands.find(l=>l.id===id)).filter(Boolean)};
+    else req={type:'card',prompt:r.prompt,skip:r.skip,cards:r.cards};
+    ui.req=req; ui.resolve=v=>{ let a;
+      if(req.type==='place') a=v==='tide'?'tide':{cardId:v.card.id,landId:v.land.id,swap:!!v.swap};
+      else if(req.type==='land') a=v?v.id:null;
+      else a=v==null?null:req.cards.indexOf(v);
+      netSend({t:'ans',v:a}); };
+    if(req.type==='card') ui.modal='pick';
+    render(); return; }
+  if(m.t==='fx'){ if(OPT.sound) SFX.ability(); ui.pop={c:m.c}; ui.glow=m.landId; render(); clearTimeout(NET.ft); NET.ft=setTimeout(()=>{ui.pop=null;ui.glow=null;render();},1150*(SPD[OPT.speed]||1)); return; }
+  if(m.t==='sfx'){ SFX[m.k]&&SFX[m.k](); return; }
+  if(m.t==='claim'){ SFX.claim(); const src=document.querySelector(`[data-lid="${m.landId}"] .tile`); const r=src&&src.getBoundingClientRect();
+    if(r){ const f=document.createElement('div'); f.className='fly'; f.textContent='+'+m.pts; f.style.left=(r.left+r.width/2)+'px'; f.style.top=(r.top+r.height/3)+'px'; document.body.appendChild(f); setTimeout(()=>f.remove(),1400); } return; }
+  if(m.t==='bye'){ netLost(); }
+}
+
+async function flyLand(land,si,pts){
+  SFX.claim();
+  const src=document.querySelector(`[data-lid="${land.id}"] .tile`); const r=src&&src.getBoundingClientRect();
+  if(r){ const f=document.createElement('div'); f.className='fly'; f.textContent='+'+pts; f.style.left=(r.left+r.width/2)+'px'; f.style.top=(r.top+r.height/3)+'px'; document.body.appendChild(f);
+    setTimeout(()=>f.remove(),1400*(SPD[OPT.speed]||1)); }
+  render();
+  const dst=document.querySelector(`#taken${si} .tk:last-child`); const d=dst&&dst.getBoundingClientRect();
+  if(r&&d&&!matchMedia('(prefers-reduced-motion: reduce)').matches){ const im=document.createElement('div'); im.className='flyimg'; im.style.backgroundImage=`url(${limg(land)})`;
+    Object.assign(im.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'}); document.body.appendChild(im); dst.style.visibility='hidden';
+    const a=im.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${d.left-r.left}px,${d.top-r.top}px) scale(${d.width/r.width})`,opacity:.9}],{duration:700*(SPD[OPT.speed]||1),easing:'cubic-bezier(.5,0,.2,1)'});
+    await a.finished.catch(()=>{}); im.remove(); dst.style.visibility=''; }
+  await wait(250);
+}
+/* ---------- render ---------- */
+function chip(nat,leader){return emb(nat,leader)}
+const isSp=c=>!!(SWAP[c.nat]&&SWAP[c.nat][c.num]);
+function mini(c,top,glow){return `<div class="mc ${top?'tp':'dim'} ${isSp(c)?'sp':''} ${glow?'glow':''}" style="${cv(c.nat)}" data-info="${c.id}"><span class="th" style="background-image:url(${cimg(c)})"></span><span class="n">${c.wild?'竜':val(c)}</span><span class="r">${c.mark?'<b class="mk">✿</b>':''}${ROLE[c.num-1]}</span></div>`}
+function findCard(id){
+  for(const p of G.p) for(const k of ['hand','discard','deck','won']){const c=p[k].find(x=>x.id===id); if(c) return c;}
+  for(const l of G.lands) for(const s of l.sides){const c=s.find(x=>x.id===id); if(c) return c;}
+  return null;
+}
+const kd=c=>c.num%2?`<span class="kd e" title="出陣効果（置いた時）">${I1}</span>`:`<span class="kd c" title="攻略時効果（この3枚目で陣形を完成させた時）">${I3}</span>`;
+const kdw=c=>c.num%2?`<span class="kd e wide">${I1}出陣</span>`:`<span class="kd c wide">${I3}攻略時</span>`;
+function infoFor(c){return `<span class="ci" style="${cv(c.nat)};background-image:url(${cimg(c)})"></span><div class="ib"><div class="in">${NAT[c.nat].n}の${ROLE[c.num-1]}<span style="font-family:var(--f-num)">${c.num}</span>${kdw(c)}${isSp(c)?'<span class="swt">✦ 国技</span>':''}</div>
+  <div class="it"><b style="font-family:var(--f-disp)">${abn(c)}</b>　${esc(txt(c))}</div>${c.mark?`<div class="st2">✿ 花の印：${val(c)}として扱う</div>`:''}${c.wild?'<div class="st2" style="color:#9a3226">竜化：7〜10として扱う</div>':''}<div class="hint" style="font-size:.7rem">長押しで大きく表示</div></div>`}
+const landEff=l=>l.b?esc(l.b):esc(l.e);
+function landInfo(l){return `<span class="ci" style="--c3:#c9962e;background-image:url(${limg(l)})"></span><div class="ib"><div class="in">${l.nm}<span class="swt">${l.pts?'+'+l.pts+'点':'0点'}</span></div>
+  <div class="it"><span class="kd wide" style="background:${l.b?'#6b7d3a':'#8a5a9e'}">攻略報酬</span> ${landEff(l)}</div></div>`}
+const handCard=(c,attr,extra='')=>`<button class="hc ${isSp(c)?'sp':''} ${extra}" style="${cv(c.nat)}" ${attr}><span class="in2"><span class="art" style="background-image:url(${cimg(c)})"></span>
+  <span class="r">${ROLE[c.num-1]}${kd(c)}</span><span class="k">${NAT[c.nat].n}・${abn(c)}</span></span><span class="n">${c.num}</span></button>`;
+// what number(s) would complete my side of a land
+function needs(l,pi){const s=l.sides[pi]; if(s.length!==2||!possible(s,pi)) return [];
+  const out=[]; for(let v=1;v<=10;v++) if(evalRole([...s,{nat:s[0].nat,num:v}],pi)) out.push(v); return out;}
+function fits(c,pi){const cc=(c.nat==='dragon'&&c.num===9)?{...c,wild:true}:c;
+  return G.lands.some(l=>l.sides[pi].length===2&&evalRole([...l.sides[pi],cc],pi));}
+// points the player would score by placing c on l now (null if no formation, false if it breaks)
+function predict(pi,c,l){
+  const side=l.sides[pi]; if(side.length!==2) return null;
+  const cc=(c.nat==='dragon'&&c.num===9)?{...c,wild:true,mark:0}:{...c,mark:0}; const s=[...side,cc]; const r=evalRole(s,pi); if(!r) return false;
+  const P=G.p[pi]; let bonus=0,mult=1; const trig=[cc]; if(cc.nat==='dwarf'&&cc.num===2) for(const x of side) if(x.num%2===0) trig.push(x);
+  for(const t of trig){ if(t.num===2&&t.nat!=='dwarf') bonus+=1; if(t.num===10){ if(t.nat==='human') mult=Math.max(mult,new Set(s.map(x=>x.nat)).size===3?3:2); else if(t.nat!=='dragon') mult=Math.max(mult,2);} }
+  if(P.leader==='demon'&&P.discard.length>=8) bonus+=1;
+  bonus+=(l.bf?l.bf(r,s,l,pi):0)+l.forge[pi];
+  let pts=(r.pts+bonus+l.pts)*mult; if(l.curse[pi]) pts=G.p[1-pi].leader==='demon'?0:Math.floor(pts/2);
+  return {pts,name:r.name};
+}
+function panel(P,pi,turn){
+  const isMe=pi===0;
+  const st=[isMe?'':`手札 ${P.hand.length}`,`山札 ${P.deck.length}`,`<button data-grave="${pi}">墓地 ${P.discard.length}</button>`].filter(Boolean);
+  if(isMe&&P.extra) st.push('<b style="color:var(--gold)">次は2枚置ける</b>');
+  return `<div class="pp orn ${turn?'turn':''}"><span class="tn">ターン</span><div class="embs">${P.nats.map(x=>chip(x,x===P.leader)).join('')}</div>
+    <div class="who"><div class="nm">${isMe?'あなた':NET.role?'相手':'CPU（'+DFN[OPT.diff]+'）'}</div><div class="st">${st.map(x=>`<span>${x}</span>`).join('')}</div></div>
+    <div class="score" title="得点">${P.score}</div>
+    <div class="taken" id="taken${pi}"><span class="lbl">攻略 ${P.claims}</span>${P.taken.map((t,k)=>`<button class="tk" data-taken="${pi}:${k}" style="background-image:url(${limg(t.land)})" title="${t.land.nm} +${t.pts}"></button>`).join('')}</div>
+    ${isMe?`<div class="tr"><b>盟約</b>　${esc(NAT[P.leader].trait)}</div>`:''}
+    ${!isMe?`<div class="opphand">${P.hand.map(c=>c.id===P.revealed&&G.p[0].leader==='fairy'?`<div class="back rv" data-info="${c.id}">${c.num}</div>`:'<div class="back"></div>').join('')}</div>`:''}</div>`;
+}
+function zoomCard(c){return `<div class="zc ${isSp(c)?'sp':''}" style="${cv(c.nat)}"><div class="zi"><div class="za" style="background-image:url(${cimg(c)})"></div>
+  <div class="zb"><div class="zt"><span>${ROLE[c.num-1]}</span><span style="display:flex;gap:6px;align-items:center">${emb(c.nat)}</span></div>
+  <div class="zab">${kdw(c)}${abn(c)}</div><div class="zx">${esc(txt(c))}</div>
+  <div style="margin-top:auto;font-size:.68rem;color:var(--faceMuted);font-family:var(--f-disp)">${NAT[c.nat].n}の${ROLE[c.num-1]}</div></div></div><div class="zn">${c.num}</div></div>`}
+function zoomLand(l,taken){return `<div class="zl" style="background-image:url(${limg(l)})"><div class="tb"><div class="nm">${l.nm}<span class="swt" style="font-size:.85rem">${l.pts?'+'+l.pts+'点':'0点'}</span></div>
+  <div class="ef"><span class="kd wide" style="background:${l.b?'#6b7d3a':'#8a5a9e'}">攻略報酬</span> ${landEff(l)}</div>
+  ${taken?`<div class="gv">凱旋 ${taken.cards.map(c=>`<span style="${cv(c.nat)};background-image:url(${cimg(c)})"></span>`).join('')}　+${taken.pts}点</div>`:''}</div></div>`}
+function render(){
+  const app=document.getElementById('app');
+  if(!G){app.innerHTML=renderSetup(); return;}
+  const me=G.p[0], cpu=G.p[1], req=ui.req;
+  const n=G.lands.length, placing=req&&req.type==='place';
+  let h=`<div class="top"><h1>${GAME}<span class="ver">${VER}</span></h1><div class="row opts"><button id="spdBtn" title="CPUと演出の速さ">速さ：${SPN[OPT.speed]}</button><button id="sndBtn">${OPT.sound?'音：オン':'音：オフ'}</button><button id="rulesBtn">ルール</button><button id="quitBtn">${NET.role?'退出':'やり直す'}</button></div></div>${NET.role?`<div class="netbar">オンライン対戦中　合言葉 <b>${NET.code}</b></div>`:''}`;
+  h+=panel(cpu,1,G.cur===1);
+  h+=`<div class="board" style="grid-template-columns:repeat(${Math.max(n,1)},minmax(0,1fr))">`;
+  G.lands.forEach((l,i)=>{
+    const cand=req&&((req.type==='land'&&req.cands.includes(l))||(placing&&ui.sel&&(ui.swap?l.sides[0].length>0:l.sides[0].length<3)));
+    const o=l.sides[1], m=l.sides[0], glow=ui.glow===l.id;
+    const stt=[l.forge[1]?`<span class="fg">相手 鍛え${l.forge[1]}</span>`:'',l.curse[1]?'<span class="cu">相手 呪い</span>':'',l.forge[0]?`<span class="fg">自分 鍛え${l.forge[0]}</span>`:'',l.curse[0]?'<span class="cu">自分 呪い</span>':''].join('');
+    const nd=needs(l,0);
+    let pr='';
+    if(placing&&ui.sel&&!ui.swap&&m.length===2){const p=predict(0,ui.sel,l); pr=p?`<span class="pred">+${p.pts}</span>`:p===false?'<span class="pred bad">陣形にならない</span>':'';}
+    h+=`<div class="land ${cand?'cand':''}" data-land="${i}" data-lid="${l.id}" tabindex="0" role="button" aria-label="${l.nm}">
+      <div class="stack opp">${o.length<3?'<div class="slot"></div>':''}${o.map((c,k)=>mini(c,k===o.length-1)).join('')}</div>
+      <div class="tile ${glow?'glow':''}" style="background-image:url(${limg(l)})"><span class="pt ${l.pts?'':'z'}">${l.pts?'+'+l.pts:'0'}</span>${pr}
+        ${stt?`<div class="st">${stt}</div>`:''}<div class="tb"><div class="nm">${l.nm}</div><div class="ef"><span class="tg ${l.b?'bonus':'gain'}">報酬</span>${landEff(l)}</div></div></div>
+      <div class="stack">${[...m].reverse().map((c,k)=>mini(c,k===0)).join('')}${m.length<3?'<div class="slot"></div>':''}${nd.length?`<div class="need" title="この数字で陣形が完成">あと ${nd.join('・')}</div>`:''}</div></div>`;
+  });
+  h+=`</div><div class="remain">土地　場 ${n}・山 ${G.landDeck.length}　（すべて攻略されたら終了）</div>`;
+  let pr='', wt=false;
+  if(G.cur===1&&!req){pr=NET.role?'相手のターン…':'CPUのターン…';wt=true;}
+  else if(G.remoteView&&!req&&G.cur===0){pr='…';wt=true;}
+  else if(placing) pr=ui.swap?(ui.sel?'入れ替える自分の土地を選ぶ':'入れ替え：手札から出すカードを選ぶ'):(ui.sel?'置く土地を選ぶ（ドラッグでも置けます）':'手札から置くカードを選ぶ（ドラッグでも置けます）');
+  else if(req&&(req.type==='land'||req.type==='card')) pr=req.prompt;
+  h+=`<div class="prompt ${wt?'wait':''}" aria-live="polite"><span>${esc(pr)}</span><span class="row">${placing?`<button id="swapBtn">${ui.swap?'置くに戻す':'入れ替え'}</button>`:''}${placing&&req.tide?'<button id="tideBtn">潮流</button>':''}${req&&req.type==='land'&&req.skip?'<button id="skipBtn">スキップ</button>':''}${req&&req.type==='card'?'<button id="openPick">選ぶ</button>':''}</span></div>`;
+  h+=`<div class="info">${ui.info||`<div class="hint">カードや土地をタップすると効果が出ます。長押しで大きく表示。<br><span class="kd e wide">${I1}出陣</span> 奇数：置いた時　<span class="kd c wide">${I3}攻略時</span> 偶数：3枚目で陣形を完成させた時</div>`}</div>`;
+  h+=panel(me,0,G.cur===0);
+  h+=`<div class="hand">${me.hand.map(c=>handCard(c,`data-hand="${c.id}"`,[ui.sel&&ui.sel.id===c.id?'sel':'',G.cur===0&&fits(c,0)?'fit':''].join(' '))).join('')}</div>`;
+  h+=`<details class="log"><summary>${esc(G.log[0]||'')}</summary><div class="ls">${G.log.slice(1,30).map(s=>`<div>${esc(s)}</div>`).join('')}</div></details>`;
+  if(ui.pop){const c=ui.pop.c; h+=`<div class="pop" style="${cv(c.nat)}"><span class="pi" style="background-image:url(${cimg(c)})"></span><div><div class="pw">${NAT[c.nat].n}の${ROLE[c.num-1]}　${c.num%2?'出陣効果':'攻略時効果'}${isSp(c)?'　✦国技':''}</div><div class="pn">${abn(c)}</div><div class="pt2">${esc(txt(c))}</div></div></div>`;}
+  if(ui.modal==='pick'&&req&&req.type==='card') h+=renderPick(req);
+  if(ui.modal==='rules') h+=renderRules();
+  if(ui.modal==='end') h+=renderEnd();
+  if(ui.modal==='lost') h+=`<div class="ov"><div class="sheet orn" style="position:relative;text-align:center"><h2>通信が切れました</h2><p>${esc(NET.err||'相手が退出しました。')}</p><div class="row" style="justify-content:center"><button class="primary" id="againBtn">タイトルに戻る</button><button id="closeEnd">盤面を見る</button></div></div></div>`;
+  if(ui.modal==='grave') h+=renderGrave(ui.gravePi);
+  if(ui.zoom) h+=`<div class="ov zov" id="zoomOv"><div class="zwrap">${ui.zoom.c?zoomCard(ui.zoom.c):zoomLand(ui.zoom.l,ui.zoom.t)}<div class="zhint">タップで閉じる</div></div></div>`;
+  const open=app.querySelector('details.log')?.open;
+  app.innerHTML=h;
+  if(open) app.querySelector('details.log').open=true;
+  netPush();
+}
+function renderGrave(pi){const P=G.p[pi];
+  return `<div class="ov"><div class="sheet orn" style="position:relative"><h2>${pi===0?'あなた':'CPU'}の墓地（${P.discard.length}枚）</h2>
+   ${P.discard.length?`<div class="ggrid">${P.discard.map(c=>`<button class="gc" style="${cv(c.nat)};background-image:url(${cimg(c)})" data-zoomc="${c.id}"><b>${c.num}</b></button>`).join('')}</div>`:'<p class="muted">まだ墓地にカードはありません。</p>'}
+   <p class="muted">山札 ${P.deck.length}枚（中身は見られません）</p><button id="graveClose">閉じる</button></div></div>`;}
+function renderPick(req){
+  return `<div class="ov"><div class="sheet orn" style="position:relative"><h2>${esc(req.prompt)}</h2>
+   <div class="hand">${req.cards.map((c,i)=>c.nm?`<button class="hc land2" style="--c1:#f6e6b8;--c2:#d9b25a;--c3:#8a6420" data-picki="${i}"><span class="in2"><span class="art" style="background-image:url(${limg(c)})"></span><span class="r">${esc(c.nm)}</span><span class="k">${c.pts?'+'+c.pts+'点 ':''}${landEff(c)}</span></span></button>`
+     :handCard(c,`data-picki="${i}"`).replace('</span></span><span class="n">',`${c._x?'<br>'+esc(c._x.l.nm)+(c._x.s===1?'（相手）':'（自分）'):''}<br><span style="font-family:var(--f-text);font-weight:600">${esc(txt(c))}</span></span></span><span class="n">`)).join('')}</div>
+   <div class="row">${req.skip?'<button id="pickSkip">スキップ</button>':''}<button id="pickHide">盤面を見る</button></div></div></div>`;
+}
+function renderEnd(){
+  const [a,b]=G.p.map(p=>p.score); const w=a>b?'勝利':a<b?'敗北':'引き分け';
+  return `<div class="ov"><div class="sheet orn" style="text-align:center;position:relative"><h2 style="font-size:1.6rem;letter-spacing:.2em">${w}</h2>
+   <div class="endsc"><div><div class="score">${a}</div>あなた・攻略${G.p[0].claims}</div><div><div class="score">${b}</div>${NET.role||G.remoteView?'相手':'CPU'}・攻略${G.p[1].claims}</div></div>
+   <p class="muted">${G.turnNo}ターン</p>
+   <div class="row" style="justify-content:center"><button class="primary" id="againBtn">${NET.role||G.remoteView?'タイトルに戻る':'国を選び直して再戦'}</button><button id="closeEnd">盤面を見る</button></div></div></div>`;
+}
+const exCards=(list)=>`<div class="ec">${list.map(([nat,n])=>`<span style="${cv(nat)};background-image:url(img/${nat}/${pad2(n)}.webp)"><b>${n}</b></span>`).join('')}</div>`;
+function renderRules(){
+  return `<div class="ov"><div class="sheet orn" style="position:relative"><h2>ルール</h2>
+  <h3>ターンの流れ</h3>
+  <p>手札から1枚を、5つの土地のどれかの自分側に重ねて置き、山札から1枚引く。置く代わりに「入れ替え」（手札1枚と自分の一番上を交換、効果なし・このターンは引かない）もできる。</p>
+  <div class="board-dia"><span class="bx" style="background:#3a2f63">相手側</span><span>相手のカードが3枚まで並ぶ</span><span class="bx" style="background:#6b5a2a">土地</span><span>攻略すると点数と攻略報酬がもらえる</span><span class="bx" style="background:#2c4c92">自分側</span><span>自分のカードを3枚まで重ねる</span></div>
+  <h3>陣形（自分側の3枚）</h3>
+  <div class="ex">
+   <div class="exb"><div class="et">列陣<span>1点</span></div>${exCards([['human',3],['elf',4],['dwarf',5]])}<div class="ed">連続する3つの数字。国はバラバラでよい。</div></div>
+   <div class="exb"><div class="et">一国列陣<span>2点</span></div>${exCards([['elf',6],['elf',7],['elf',8]])}<div class="ed">同じ国だけの列陣。</div></div>
+   <div class="exb"><div class="et">同陣<span>3点</span></div>${exCards([['dragon',9],['demon',9],['human',9]])}<div class="ed">同じ数字が3枚。</div></div>
+  </div>
+  <p>陣形ができたらその土地を<b>攻略</b>：陣形の点＋土地の点を得て、使った3枚は<b>凱旋</b>として土地と一緒に自分の陣地へ。相手側のカードは<b>墓地</b>へ。3枚で陣形にならなければ、一番下が墓地へ落ちる。</p>
+  <h3>効果</h3>
+  <p><span class="kd e wide">${I1}出陣</span> 奇数のカードは置いた時に発動。<br><span class="kd c wide">${I3}攻略時</span> 偶数のカードは、3枚目として置いて陣形を完成させた時に発動。<br>金色に光るカードはその国だけの<b>国技</b>。</p>
+  <h3>国と盟約</h3>
+  <p>3か国でデッキ（30枚）を組み、1つを盟主にする。盟主の国の<b>盟約</b>だけが有効。</p>
+  <p class="muted">特別な状態：<b>鍛え</b>（ドワーフ・溜めるほど得点+）／<b>花の印</b>（フェアリー・数字+1）／<b>呪い</b>（魔族・攻略時の得点半分）／<b>竜化</b>（ドラゴニュート9・7〜10として扱う）</p>
+  <h3>終わり</h3>
+  <p>場には常に土地5枚。攻略されたら山から補充し、12枚すべて攻略されたら終了。得点の多い方の勝ち。</p>
+  <button id="rulesClose">閉じる</button></div></div>`;
+}
+function renderSetup(){
+  const s=setup;
+  const seg=(key,map)=>`<span class="seg">${Object.entries(map).map(([k,v])=>`<button data-opt="${key}:${k}" aria-pressed="${OPT[key]===k}">${v}</button>`).join('')}</span>`;
+  const net=ui.mode==='net', ok=s.sel.length===3&&s.leader;
+  if(NET.role) return `<div class="top"><h1>${GAME}<span class="ver">${VER}</span></h1></div>
+    <div class="lobby orn">${NET.role==='host'?`<p>この合言葉を相手に伝えてください</p><div class="code">${NET.code||'····'}</div>`:`<p>合言葉 <b>${NET.code}</b> の部屋</p>`}
+    <p class="muted">${esc(NET.status)}</p><div class="spin"></div><button id="cancelNet">やめる</button></div>`;
+  return `<div class="top"><h1>${GAME}<span class="ver">${VER}</span></h1><div class="row opts"><a class="btnlink" href="cards.html">カード一覧</a><button id="rulesBtn0">ルール</button></div></div>
+  <div class="seg modes"><button data-mode="cpu" aria-pressed="${!net}">CPUと対戦</button><button data-mode="net" aria-pressed="${net}">友だちと対戦</button></div>
+  <p class="lead">3か国を選び、もう一度押した国が盟主になる。デッキは30枚。${net?'部屋を作った人は合言葉を相手に伝え、相手は合言葉を入れて入る。':'CPUの国はランダム。'}</p>
+  ${NET.err?`<p class="neterr">${esc(NET.err)}</p>`:''}
+  <div class="setrow">${net?'':`<label>CPUの強さ ${seg('diff',DFN)}</label>`}<label>速さ ${seg('speed',SPN)}</label><label>音 ${seg('sound',{true:'オン',false:'オフ'})}</label></div>
+  <div class="ngrid">${Object.entries(NAT).map(([k,v])=>{const sel=s.sel.includes(k), ld=s.leader===k;
+    return `<button class="nat ${sel?'sel':''} ${ld?'ld':''}" style="${cv(k)}" data-nat="${k}">
+    <span class="bn" style="background-image:url(img/${k}/10.webp)"></span>${sel?`<span class="mark">${ld?'♛ 盟主':'選択中'}</span>`:''}
+    <span class="bd"><span class="t">${emb(k)}${v.n}</span><span class="sty">${STYLE[k]}</span>
+    <span class="tr"><b style="color:var(--gold);font-family:var(--f-body);font-size:.7rem">盟約</b>　${v.trait}</span>
+    <span class="sw">${Object.entries(SWAP[k]).map(([n,t])=>`<b>✦${n} ${SABN[k][n]}</b>　${t}`).join('<br>')}</span></span></button>`}).join('')}</div>
+  <div class="go row">${net?`<button class="primary" id="hostBtn" ${ok?'':'disabled'}>部屋を作る</button><span class="join"><input id="codeIn" maxlength="4" placeholder="合言葉" autocomplete="off" autocapitalize="characters" value="${esc(ui.codeDraft||'')}"><button id="joinBtn" ${ok?'':'disabled'}>入る</button></span>`
+   :`<button class="primary" id="startBtn" ${ok?'':'disabled'}>この3か国で出陣</button>`}<span class="muted">${s.sel.length}/3・盟主 ${s.leader?NAT[s.leader].n:'未選択'}</span></div>
+  ${ui.modal==='rules'?renderRules():''}`;
+}
+
+/* ---------- events ---------- */
+let press=null, ghost=null, suppress=0;
+function zoomFrom(el){
+  const h=el.closest('[data-hand]'), inf=el.closest('[data-info]'), gc=el.closest('[data-zoomc]'), tk=el.closest('[data-taken]'), tile=el.closest('.tile'), pk=el.closest('[data-picki]');
+  if(h){const c=G.p[0].hand.find(x=>x.id==h.dataset.hand); if(c) return {c};}
+  if(pk&&ui.req&&ui.req.cards){const c=ui.req.cards[+pk.dataset.picki]; if(c&&!c.nm) return {c}; if(c&&c.nm) return {l:c};}
+  if(inf){const c=findCard(+inf.dataset.info); if(c) return {c};}
+  if(gc){const c=findCard(+gc.dataset.zoomc); if(c) return {c};}
+  if(tk){const [pi,k]=tk.dataset.taken.split(':').map(Number); const t=G.p[pi].taken[k]; if(t) return {l:t.land,t};}
+  if(tile){const ld=tile.closest('[data-land]'); const l=ld&&G.lands[+ld.dataset.land]; if(l) return {l};}
+  return null;
+}
+function landAt(x,y){const el=document.elementFromPoint(x,y); return el&&el.closest('.land');}
+document.addEventListener('pointerdown',e=>{
+  if(!G||e.button>0) return;
+  const el=e.target.closest('[data-hand],[data-info],[data-zoomc],[data-taken],.tile,[data-picki]'); if(!el) return;
+  press={el,x:e.clientX,y:e.clientY,drag:false,long:false};
+  press.t=setTimeout(()=>{ if(!press||press.drag) return; const z=zoomFrom(press.el); if(z){press.long=true; ui.zoom=z; SFX.pick(); render();} },450);
+});
+document.addEventListener('pointermove',e=>{
+  if(!press||press.long) return;
+  const dx=e.clientX-press.x, dy=e.clientY-press.y;
+  if(!press.drag&&Math.hypot(dx,dy)>8){
+    clearTimeout(press.t);
+    const h=press.el.closest('[data-hand]');
+    if(h&&ui.req&&ui.req.type==='place'){ const c=G.p[0].hand.find(x=>x.id==h.dataset.hand); if(!c){press=null;return;}
+      press.drag=true; press.card=c; ui.sel=c; ui.info=infoFor(c); render();
+      ghost=document.createElement('div'); ghost.className='ghost'; ghost.style.backgroundImage=`url(${cimg(c)})`; document.body.appendChild(ghost);
+    } else { press=null; return; }
+  }
+  if(press&&press.drag){ ghost.style.left=e.clientX+'px'; ghost.style.top=e.clientY+'px';
+    document.querySelectorAll('.land.over').forEach(x=>x.classList.remove('over')); const l=landAt(e.clientX,e.clientY); if(l&&l.classList.contains('cand')) l.classList.add('over'); }
+});
+function endPress(e){
+  if(!press) return; clearTimeout(press.t);
+  if(press.long) suppress=Date.now();
+  if(press.drag){ suppress=Date.now(); if(ghost){ghost.remove(); ghost=null;}
+    const l=e&&landAt(e.clientX,e.clientY); const req=ui.req;
+    if(l&&req&&req.type==='place'){ const land=G.lands[+l.dataset.land], card=press.card;
+      if(land&&(ui.swap?land.sides[0].length>0:land.sides[0].length<3)){ const sw=ui.swap; ui.sel=null; ui.swap=false; ui.info=''; press=null; return resolveReq(sw?{card,land,swap:true}:{card,land}); } }
+    render(); }
+  press=null;
+}
+document.addEventListener('pointerup',endPress);
+document.addEventListener('pointercancel',()=>{ if(ghost){ghost.remove();ghost=null;} if(press) clearTimeout(press.t); press=null; });
+document.addEventListener('contextmenu',e=>{ if(e.target.closest('.hc,.tile,.mc,.gc,.tk')) e.preventDefault(); });
+document.addEventListener('click',e=>{
+  if(Date.now()-suppress<350){ e.preventDefault(); e.stopPropagation(); return; }
+  if(ui.zoom&&e.target.closest('#zoomOv')){ ui.zoom=null; return render(); }
+  const t=e.target.closest('button,[data-land],[data-info]'); if(!t) return;
+  if(t.dataset.opt){ const [k,v]=t.dataset.opt.split(':'); OPT[k]=k==='sound'?v==='true':v; saveOpt(); if(k==='sound'&&OPT.sound) SFX.pick(); return render(); }
+  if(!G){
+    if(t.dataset.nat){const k=t.dataset.nat,s=setup;
+      if(s.sel.includes(k)){ if(s.leader===k){s.sel=s.sel.filter(x=>x!==k);s.leader=null;} else s.leader=k; }
+      else if(s.sel.length<3) s.sel.push(k);
+      SFX.pick(); render();}
+    if(t.dataset.mode){ui.mode=t.dataset.mode; NET.err=''; return render();}
+    if(t.id==='hostBtn') return netHost();
+    if(t.id==='joinBtn'){ ui.codeDraft=document.getElementById('codeIn').value; return netJoin(ui.codeDraft); }
+    if(t.id==='cancelNet'){ netQuit(); return render(); }
+    if(t.id==='againBtn'){ netQuit(); G=null; ui={sel:null,req:null,resolve:null,info:'',modal:null,mode:ui.mode}; return render(); }
+    if(t.id==='rulesBtn0'){ui.modal='rules';return render();}
+    if(t.id==='rulesClose'){ui.modal=null;return render();}
+    if(t.id==='startBtn'){ui.modal=null; newGame(setup.sel,setup.leader);}
+    return;
+  }
+  const req=ui.req;
+  if(t.id==='spdBtn'){const ks=Object.keys(SPN); OPT.speed=ks[(ks.indexOf(OPT.speed)+1)%ks.length]; saveOpt(); return render();}
+  if(t.id==='sndBtn'){OPT.sound=!OPT.sound; saveOpt(); if(OPT.sound) SFX.pick(); return render();}
+  if(t.id==='rulesBtn'){ui.modal='rules';return render();}
+  if(t.id==='rulesClose'||t.id==='closeEnd'||t.id==='graveClose'){ui.modal=(req&&req.type==='card'&&t.id!=='closeEnd')?'pick':null;return render();}
+  if(t.dataset.grave!=null){ui.modal='grave'; ui.gravePi=+t.dataset.grave; return render();}
+  if(t.dataset.zoomc){const c=findCard(+t.dataset.zoomc); if(c){ui.zoom={c}; return render();}}
+  if(t.dataset.taken){const z=zoomFrom(t); if(z){ui.zoom=z; return render();}}
+  if(t.id==='quitBtn'||t.id==='againBtn'){if(NET.role) netQuit(); if(ui.resolve){ui.resolve=null;ui.req=null;} if(G) G.over=true; G=null; ui={sel:null,req:null,resolve:null,info:'',modal:null,mode:ui.mode}; setup={sel:[],leader:null}; return render();}
+  if(t.id==='openPick'){ui.modal='pick';return render();}
+  if(t.id==='pickHide'){ui.modal=null;return render();}
+  if(t.id==='pickSkip') return resolveReq(null);
+  if(t.id==='skipBtn') return resolveReq(null);
+  if(t.id==='tideBtn'&&req&&req.type==='place'){ui.sel=null;ui.swap=false;return resolveReq('tide');}
+  if(t.id==='swapBtn'&&req&&req.type==='place'){ui.swap=!ui.swap;return render();}
+  if(t.dataset.picki!=null&&req&&req.type==='card'){const c=req.cards[+t.dataset.picki]; if(c){SFX.pick(); resolveReq(c);} return;}
+  if(t.dataset.hand){const c=G.p[0].hand.find(x=>x.id==t.dataset.hand); ui.info=infoFor(c);
+    if(req&&req.type==='place'){ui.sel=ui.sel&&ui.sel.id===c.id?null:c; SFX.pick();} return render();}
+  if(t.dataset.land!=null){const l=G.lands[+t.dataset.land]; if(!l) return;
+    if(req&&req.type==='land'&&req.cands.includes(l)) return resolveReq(l);
+    if(req&&req.type==='place'&&ui.sel&&ui.swap&&l.sides[0].length){const card=ui.sel; ui.sel=null; ui.swap=false; ui.info=''; return resolveReq({card,land:l,swap:true});}
+    if(req&&req.type==='place'&&ui.sel&&!ui.swap&&l.sides[0].length<3){const card=ui.sel; ui.sel=null; ui.info=''; return resolveReq({card,land:l});}
+    const ic=e.target.closest('[data-info]'); if(ic){const c=findCard(+ic.dataset.info); if(c){ui.info=infoFor(c);render();}}
+    else if(e.target.closest('.tile')){ui.info=landInfo(l);render();}
+    return;
+  }
+  if(t.dataset.info){const c=findCard(+t.dataset.info); if(c){ui.info=infoFor(c);render();}}
+});
+document.addEventListener('input',e=>{ if(e.target.id==='codeIn') ui.codeDraft=e.target.value; });
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.id==='codeIn'){ document.getElementById('joinBtn')?.click(); return; }
+  if(e.key==='Escape'&&ui.zoom){ui.zoom=null;render();return;}
+  if((e.key==='Enter'||e.key===' ')&&e.target.dataset&&e.target.dataset.land!=null){e.preventDefault();e.target.click();}});
+render();
+</script>
+</body></html>
