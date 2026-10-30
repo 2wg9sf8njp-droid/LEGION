@@ -322,7 +322,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 
 const LIVE=typeof window!=='undefined'&&!globalThis.SIM;
-const GAME='レギオン', VER='v0.1';
+const GAME='レギオン', VER='v0.1.2';
 let OPT={speed:'normal',diff:'normal',sound:true};
 try{const o=JSON.parse(localStorage.getItem('hk-opt')||'null'); if(o) OPT={...OPT,...o};}catch(e){}
 const saveOpt=()=>{try{localStorage.setItem('hk-opt',JSON.stringify(OPT))}catch(e){}};
@@ -675,7 +675,7 @@ function endGame(){
 }
 
 /* ---------- online play: the host runs the game, the guest only sees and answers ---------- */
-const NET={role:null,peer:null,conn:null,code:'',status:'',err:'',pending:null,qt:null};
+const NET={relay:'',role:null,peer:null,conn:null,code:'',status:'',err:'',pending:null,qt:null};
 const CODECH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const newCode=()=>Array.from({length:4},()=>CODECH[Math.random()*CODECH.length|0]).join('');
 // a tiny stand-in for PeerJS over BroadcastChannel, used only for local two-window testing (?mock)
@@ -696,26 +696,37 @@ class MockPeer{
 const BROKERS=['wss://broker.hivemq.com:8884/mqtt','wss://broker.emqx.io:8084/mqtt','wss://test.mosquitto.org:8081'];
 const rnd=()=>Math.random().toString(36).slice(2,8);
 class MqttPeer{
-  constructor(id){ this.id=id||('g'+rnd()); this.h={}; this.conns={}; this._connect(0); }
+  // connects to every broker at once and sends each message through all of them; numbered messages are de-duplicated and kept in order
+  constructor(id){ this.id=id||('g'+rnd()); this.h={}; this.conns={}; this.cs=[]; this.up=0; this.opened=false; this.seq=0; this.next={}; this.buf={};
+    BROKERS.forEach(u=>this._connect(u));
+    this.fail=setTimeout(()=>{ if(!this.opened) (this.h.error||(()=>{}))({type:'network'}); },12000); }
   topic(t){ return 'legion-game/v1/'+t; }
-  _connect(i){
-    let opened=false;
-    const c=window.mqtt.connect(BROKERS[i],{clientId:'lg_'+this.id+'_'+rnd(),clean:true,reconnectPeriod:2000,connectTimeout:6000,keepalive:30});
-    const fail=setTimeout(()=>{ if(opened) return; try{c.end(true);}catch(e){} if(i+1<BROKERS.length) this._connect(i+1); else (this.h.error||(()=>{}))({type:'network'}); },7000);
-    c.on('connect',()=>{ c.subscribe(this.topic(this.id),{qos:1},()=>{ if(!opened){ opened=true; clearTimeout(fail); (this.h.open||(()=>{}))(this.id); } }); });
-    c.on('message',(t,buf)=>{ let m; try{ m=JSON.parse(typeof buf==='string'?buf:new TextDecoder().decode(buf)); }catch(e){ return; } this._msg(m); });
-    this.c=c;
+  _connect(url){
+    let c; try{ c=window.mqtt.connect(url,{clientId:'lg_'+rnd()+rnd(),clean:true,reconnectPeriod:3000,connectTimeout:8000,keepalive:30}); }catch(e){ return; }
+    c._ok=false; this.cs.push(c);
+    c.on('connect',()=>{ c.subscribe(this.topic(this.id),{qos:1},err=>{ if(err) return; if(!c._ok){c._ok=true; this.up++; NET.relay=this.up+'/'+BROKERS.length; render();}
+      if(!this.opened){ this.opened=true; clearTimeout(this.fail); (this.h.open||(()=>{}))(this.id); } }); });
+    c.on('close',()=>{ if(c._ok){c._ok=false; this.up--; NET.relay=this.up+'/'+BROKERS.length;} });
+    c.on('error',()=>{});
+    c.on('message',(t,b)=>{ let m; try{ m=JSON.parse(typeof b==='string'?b:new TextDecoder().decode(b)); }catch(e){ return; } this._in(m); });
   }
+  _in(m){ const f=m.from; if(!f||f===this.id) return;
+    if(m.k==='open'){ if(this.conns[f]&&this.conns[f]._live) return; this.next[f]=1; this.buf[f]={}; }
+    const nx=this.next[f]||1; if(m.n<nx) return;                 // duplicate from another broker
+    (this.buf[f]=this.buf[f]||{})[m.n]=m;
+    while(this.buf[f][this.next[f]||1]){ const x=this.buf[f][this.next[f]||1]; delete this.buf[f][this.next[f]||1]; this.next[f]=(this.next[f]||1)+1; this._msg(x); } }
   _msg(m){ const from=m.from;
-    if(m.k==='open'){ const c=this._conn(from); this.conns[from]=c; this._post(from,{k:'ack'}); (this.h.connection||(()=>{}))(c); setTimeout(()=>c._emit('open'),0); }
-    else if(m.k==='ack'){ this.conns[from]&&this.conns[from]._emit('open'); }
+    if(m.k==='open'){ const c=this._conn(from); c._live=true; this.conns[from]=c; this._post(from,{k:'ack'}); (this.h.connection||(()=>{}))(c); setTimeout(()=>c._emit('open'),0); }
+    else if(m.k==='ack'){ const c=this.conns[from]; if(c&&!c._live){ c._live=true; c._emit('open'); } }
     else if(m.k==='data'){ this.conns[from]&&this.conns[from]._emit('data',m.d); }
     else if(m.k==='close'){ this.conns[from]&&this.conns[from]._emit('close'); } }
-  _post(to,m){ try{ this.c.publish(this.topic(to),JSON.stringify({...m,from:this.id}),{qos:1}); }catch(e){} }
+  _post(to,m){ const msg=JSON.stringify({...m,from:this.id,n:++this.seq}); for(const c of this.cs){ try{ if(c.connected) c.publish(this.topic(to),msg,{qos:1}); }catch(e){} } }
   on(k,f){ this.h[k]=f; }
   _conn(peer){ const self=this, h={}; return {peer,on(k,f){h[k]=f;},_emit(k,d){h[k]&&h[k](d);},send(d){self._post(peer,{k:'data',d});},close(){self._post(peer,{k:'close'});}}; }
-  connect(id){ const c=this._conn(id); this.conns[id]=c; this._post(id,{k:'open'}); return c; }
-  destroy(){ try{ this.c.end(true); }catch(e){} }
+  connect(id){ const c=this._conn(id); this.conns[id]=c; this.seq=0; this._post(id,{k:'open'});
+    // resend the knock a few times in case a broker was still connecting
+    let k=0; const iv=setInterval(()=>{ if(c._live||++k>4){clearInterval(iv);return;} this.seq=0; this._post(id,{k:'open'}); },2500); return c; }
+  destroy(){ clearTimeout(this.fail); for(const c of this.cs){ try{ c.end(true); }catch(e){} } }
 }
 const MOCK=/[?&]mock/.test(location.search);
 const PeerCls=()=>MOCK?MockPeer:(window.mqtt?MqttPeer:null);
@@ -974,7 +985,7 @@ function renderSetup(){
   const net=ui.mode==='net', ok=s.sel.length===3&&s.leader;
   if(NET.role) return `<div class="top"><h1>${GAME}<span class="ver">${VER}</span></h1></div>
     <div class="lobby orn">${NET.role==='host'?`<p>この合言葉を相手に伝えてください</p><div class="code">${NET.code||'····'}</div>`:`<p>合言葉 <b>${NET.code}</b> の部屋</p>`}
-    <p class="muted">${esc(NET.status)}</p><div class="spin"></div><button id="cancelNet">やめる</button></div>`;
+    <p class="muted">${esc(NET.status)}</p><div class="spin"></div><p class="muted" style="font-size:.72rem">中継サーバー ${NET.relay||'接続中…'}</p><button id="cancelNet">やめる</button></div>`;
   return `<div class="top"><h1>${GAME}<span class="ver">${VER}</span></h1><div class="row opts"><a class="btnlink" href="cards.html">カード一覧</a><button id="rulesBtn0">ルール</button></div></div>
   <div class="seg modes"><button data-mode="cpu" aria-pressed="${!net}">CPUと対戦</button><button data-mode="net" aria-pressed="${net}">友だちと対戦</button></div>
   <p class="lead">3か国を選び、もう一度押した国が盟主になる。デッキは30枚。${net?'部屋を作った人は合言葉を相手に伝え、相手は合言葉を入れて入る。':'CPUの国はランダム。'}</p>
