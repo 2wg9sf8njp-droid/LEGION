@@ -186,7 +186,7 @@ function cardHTML(nat,n){
     <div class="ab ${t.length>40?'xl':t.length>28?'l':''}"><b class="abn">${abn({nat,num:n})}</b>${t}</div>
     <div class="foot"><span>${N.n}の${ROLE[n-1]}</span><span>${pad(n)}/10</span></div></div></div>`;
 }
-const MERC_TXT='何の数字・国にもなる。置く時、自分側の枚数だけ点を払う。取られたら相手に寝返る。';
+const MERC_TXT='何の数字・国にもなる。置く時、自分側の枚数だけ雇用料を払う。取られたら相手に寝返る。';
 const MV='--c:#2b2a33;--c1:#a9a6b4;--c2:#4a4856;--c3:#1e1d25';
 const MEMB='<svg viewBox="0 0 24 24"><path d="M12 2l7 10-7 10-7-10z" fill="none" stroke-width="1.8"/><path d="M12 5v14M9 8.5h6" fill="none" stroke-width="1.8"/></svg>';
 function mercHTML(){return `<div class="inner"><div class="art"><img src="img/merc.webp" alt="謎の傭兵団"><div class="num">★</div><div class="emb" title="傭兵団">${MEMB}</div></div>
