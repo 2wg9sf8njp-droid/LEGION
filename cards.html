@@ -105,6 +105,8 @@ h1{font-family:var(--f-disp);font-weight:700;font-size:1.6rem;margin:0;letter-sp
 .spchip{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:1px 9px;border-radius:999px;font-size:.8rem;font-weight:700;color:#3a2a08;
   background:linear-gradient(180deg,#fbe8a6,#d7ab48);box-shadow:0 0 0 1px #8a6420}
 .tab .sps{font-size:.68rem;color:#a07a24;font-weight:700}
+.card.mcard{box-shadow:0 0 0 2px #c9a24e,0 0 16px rgba(240,200,90,.35),0 8px 20px rgba(0,0,0,.2)}
+.card.mcard .num{background:radial-gradient(circle at 35% 30%,#4a4856,#111 75%);color:#f0d27c;box-shadow:0 0 0 2px #fff3c4,0 0 0 4px #c9a24e}
 .legend{color:var(--muted);font-size:.78rem;margin-top:14px;line-height:1.6}
 @media (max-width:480px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.name{font-size:.9rem}.ab{font-size:.68rem}}
 </style></head>
@@ -174,7 +176,7 @@ const I3='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="5
 const ART={human:10,elf:10,dwarf:10,dragon:10,mermaid:10,fairy:10,beast:10,demon:10,land:12};
 const pad=n=>String(n).padStart(2,'0');
 let cur='human';
-try{const s=localStorage.getItem('hk-cards-tab'); if(s&&(NAT[s]||s==='land')) cur=s;}catch(e){}
+try{const s=localStorage.getItem('hk-cards-tab'); if(s&&(NAT[s]||s==='land'||s==='merc')) cur=s;}catch(e){}
 
 function cardHTML(nat,n){
   const N=NAT[nat], sw=SWAP[nat]&&SWAP[nat][n], t=sw||BASE[n], odd=n%2===1;
@@ -184,6 +186,13 @@ function cardHTML(nat,n){
     <div class="ab ${t.length>40?'xl':t.length>28?'l':''}"><b class="abn">${abn({nat,num:n})}</b>${t}</div>
     <div class="foot"><span>${N.n}の${ROLE[n-1]}</span><span>${pad(n)}/10</span></div></div></div>`;
 }
+const MERC_TXT='何の数字・国にもなる。置く時、自分側の枚数だけ点を払う。取られたら相手に寝返る。';
+const MV='--c:#2b2a33;--c1:#a9a6b4;--c2:#4a4856;--c3:#1e1d25';
+const MEMB='<svg viewBox="0 0 24 24"><path d="M12 2l7 10-7 10-7-10z" fill="none" stroke-width="1.8"/><path d="M12 5v14M9 8.5h6" fill="none" stroke-width="1.8"/></svg>';
+function mercHTML(){return `<div class="inner"><div class="art"><img src="img/merc.webp" alt="謎の傭兵団"><div class="num">★</div><div class="emb" title="傭兵団">${MEMB}</div></div>
+    <div class="body"><div class="name"><span>謎の傭兵団</span></div>
+    <div class="ab l"><b class="abn">傭兵契約</b>${MERC_TXT}</div>
+    <div class="foot"><span>どの国にも属さない</span><span>各自1枚</span></div></div></div>`;}
 function landHTML(i){
   const L=LANDS[i], img=(ART.land||0)>i?`<img src="img/land/${pad(i+1)}.webp" alt="${L.nm}">`:'<div class="ph">イラスト待ち</div>';
   return `${img}<div class="lbox"><div class="lname"><span>${L.nm}</span><span class="pts ${L.pts?'':'zero'}">${L.pts?'+'+L.pts+'点':'0点'}</span></div>
@@ -192,7 +201,13 @@ function landHTML(i){
 function render(){
   document.getElementById('tabs').innerHTML=Object.entries(NAT).map(([k,v])=>
     `<button class="tab" data-tab="${k}" aria-pressed="${k===cur}"><span class="dot" style="background:${v.c}"></span>${v.n}<span class="sps">✦${Object.keys(SWAP[k]).join('・')}</span><span class="cnt">${ART[k]||0}/10</span></button>`).join('')
+    +`<button class="tab" data-tab="merc" aria-pressed="${cur==='merc'}"><span class="dot" style="background:#2b2a33;box-shadow:0 0 0 1px #c9a24e"></span>傭兵団<span class="cnt">1</span></button>`
     +`<button class="tab" data-tab="land" aria-pressed="${cur==='land'}"><span class="dot" style="background:#9e9474"></span>土地<span class="cnt">${ART.land||0}/12</span></button>`;
+  if(cur==='merc'){
+    document.getElementById('natinfo').innerHTML='<b>謎の傭兵団</b>　どの国にも属さない特別なカード。お互い最初の手札に1枚ずつ持って始める（デッキ30枚＋1枚）。';
+    document.getElementById('grid').innerHTML=`<button class="card mcard" style="${MV}" data-merc="1" aria-label="謎の傭兵団">${mercHTML()}</button>`;
+    return;
+  }
   if(cur==='land'){
     document.getElementById('natinfo').innerHTML='<b>土地</b>　枠なしの風景カード。陣形を完成させた側が攻略し、点数と攻略報酬は下の箱に表示。';
     document.getElementById('grid').innerHTML=LANDS.map((L,i)=>`<button class="lcard" data-l="${i}" aria-label="${L.nm}">${landHTML(i)}</button>`).join('');
@@ -205,6 +220,7 @@ function render(){
 document.addEventListener('click',e=>{
   const tb=e.target.closest('[data-tab]');
   if(tb){cur=tb.dataset.tab; try{localStorage.setItem('hk-cards-tab',cur)}catch(e){} return render();}
+  if(e.target.closest('#grid [data-merc]')){document.getElementById('zoom').innerHTML=`<div class="ov" id="ov"><button class="close" id="cl">閉じる</button><div class="card mcard" style="${MV}">${mercHTML()}</div></div>`;return;}
   const lc=e.target.closest('#grid .lcard');
   if(lc){document.getElementById('zoom').innerHTML=`<div class="ov" id="ov"><button class="close" id="cl">閉じる</button><div class="lcard">${landHTML(+lc.dataset.l)}</div></div>`;return;}
   const c=e.target.closest('#grid .card');

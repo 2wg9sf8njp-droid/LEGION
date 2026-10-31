@@ -266,6 +266,16 @@ h1{white-space:nowrap}
 .sc.sp .sn{box-shadow:0 0 0 2px #fff3c4,0 0 0 3.5px #c9a24e}
 .sc.sel{transform:translateY(-6px);box-shadow:0 0 0 3px var(--hi),0 6px 12px rgba(0,0,0,.5)}
 .sc.fit::after{content:"";position:absolute;inset:-3px;border-radius:9px;box-shadow:0 0 0 2px #9fe0a8,0 0 10px rgba(159,224,168,.75);pointer-events:none}
+
+.mj{--c1:#a9a6b4;--c2:#4a4856;--c3:#1e1d25}
+.sc.mj{background:linear-gradient(160deg,#5c5a68,#26252e 60%,#0f0e13);box-shadow:0 0 0 1.5px #c9a24e,0 2px 6px rgba(0,0,0,.6)}
+.sc.mj .sn{background:#1e1d25;color:#f0d27c;box-shadow:0 0 0 2px #c9a24e}
+.hc.mj{box-shadow:0 0 0 2px #c9a24e,0 2px 8px rgba(0,0,0,.6)}
+.hc.mj .n,.zc.mj .zn{background:radial-gradient(circle at 35% 30%,#4a4856,#111 75%);color:#f0d27c}
+.mc.mj .n{color:#8a6420}
+.zc.mj{background:linear-gradient(160deg,#6b6878,#2a2932 55%,#121117);box-shadow:0 0 0 3px #c9a24e,0 20px 60px rgba(0,0,0,.6)}
+.pred.cost{font-family:var(--f-body);font-size:.7rem;background:#2b2a33;color:#f0d27c;box-shadow:0 0 0 2px #c9a24e}
+.pred small{font-family:var(--f-body);font-size:.55rem;margin-left:3px}
 @media (prefers-reduced-motion:reduce){.hc.sel,.nat:hover{transform:none}}
 </style>
 
@@ -286,6 +296,7 @@ const NAT={
   demon:{n:'魔族',c:'#5a388e',trait:'墓地が8枚以上なら陣形の得点+1。自分の呪いは得点を0にする'},
 };
 const EMB={
+ merc:'<svg viewBox="0 0 24 24"><path d="M12 2l7 10-7 10-7-10z" fill="none" stroke-width="1.8"/><path d="M12 5v14M9 8.5h6" fill="none" stroke-width="1.8"/></svg>',
  human:'<svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z" fill="none" stroke-width="2"/><path d="M12 6v11M7.5 10.5h9" fill="none" stroke-width="2"/></svg>',
  elf:'<svg viewBox="0 0 24 24"><path d="M20 3C9 3 4 9 4 15c0 2 .6 3.6 1.4 5C8 13 12 10 16 8c-4 3-7 6-9.4 12.6C8 21.5 9.6 22 11 22c6 0 10-6 9-19z"/></svg>',
  dwarf:'<svg viewBox="0 0 24 24"><path d="M11 3h2v19h-2z"/><path d="M13 4c4 0 7 2 8 6-2-1-5-1-8 1zM11 4C7 4 4 6 3 10c2-1 5-1 8 1z"/></svg>',
@@ -295,10 +306,14 @@ const EMB={
  beast:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="16.5" rx="5" ry="4.2"/><ellipse cx="5" cy="10.5" rx="2.2" ry="2.8"/><ellipse cx="19" cy="10.5" rx="2.2" ry="2.8"/><ellipse cx="9" cy="5.5" rx="2.2" ry="2.9"/><ellipse cx="15" cy="5.5" rx="2.2" ry="2.9"/></svg>',
  demon:'<svg viewBox="0 0 24 24"><path d="M4 2c0 5 2 7 5 8M20 2c0 5-2 7-5 8" fill="none" stroke-width="2"/><path d="M2 15c3-4 7-5 10-5s7 1 10 5c-3 4-7 5-10 5s-7-1-10-5z"/><circle cx="12" cy="15" r="3" fill="#c0283a" stroke="none"/><path d="M12 12.6v4.8" stroke="#1a0f22" stroke-width="1.4"/></svg>',
 };
+const MERC_TXT='何の数字・国にもなる。置く時、自分側の枚数だけ点を払う（0・1・2点）。乗った土地を取られたら相手に寝返る。';
+const NATX={};
 const PAL={human:['#d4ebf6','#93c6e0','#3d7ea6'],elf:['#dcebc9','#94c07c','#3c7a45'],dwarf:['#f8dfbd','#e7a866','#b0602a'],dragon:['#f4cdc2','#d97a66','#9a3226'],
   mermaid:['#c9d8f2','#7495d2','#2c4c92'],fairy:['#f9dce8','#eca6c4','#b65a88'],beast:['#ffffff','#e4e7ec','#8c95a5'],demon:['#e2d5f0','#a184cc','#5a388e']};
+PAL.merc=['#a9a6b4','#4a4856','#1e1d25'];
 const cv=nat=>`--c1:${PAL[nat][0]};--c2:${PAL[nat][1]};--c3:${PAL[nat][2]}`;
-const emb=(nat,lead)=>`<span class="emb ${lead?'lead':''}" style="${cv(nat)}" title="${NAT[nat].n}${lead?'（盟主）':''}">${EMB[nat]}</span>`;
+Object.assign(NATX,NAT,{merc:{n:'傭兵団',c:'#2b2a33',trait:''}});
+const emb=(nat,lead)=>`<span class="emb ${lead?'lead':''}" style="${cv(nat)}" title="${NATX[nat].n}${lead?'（盟主）':''}">${EMB[nat]}</span>`;
 const ROLE=['民','兵士','斥候','商人','騎士','魔術師','聖職者','賢者','将軍','王'];
 const BASE={1:'1枚引く',2:'この陣形の得点+1',3:'相手の一番上を別の土地へ動かす',4:'2枚引いて1枚捨てる',5:'同じ土地の相手の一番上を相手の手札に押し返す',6:'相手の土地1つの一番上を墓地に送る',7:'墓地から1枚手札に戻す',8:'相手の手札を見て1枚墓地に送らせる',9:'もう1枚、別の土地に置ける',10:'この土地の得点を2倍にする'};
 const SWAP={
@@ -314,16 +329,16 @@ const SWAP={
 const ABN={1:'補給',2:'鼓舞',3:'撹乱',4:'調達',5:'押し返し',6:'魔弾',7:'祈り',8:'看破',9:'進軍',10:'王命'};
 const SABN={human:{4:'交易',10:'同盟の王'},elf:{3:'先読み',6:'芽吹き'},dwarf:{2:'重ね打ち',5:'鍛造'},dragon:{9:'竜化',10:'業火'},
   mermaid:{3:'渦潮',7:'還流'},fairy:{1:'花の印',8:'妖精のいたずら'},beast:{1:'群れ呼び',9:'狩りの号令'},demon:{1:'生贄',7:'呪縛'}};
-const abn=c=>(SABN[c.nat]&&SABN[c.nat][c.num])||ABN[c.num];
+const abn=c=>c.joker?'傭兵契約':(SABN[c.nat]&&SABN[c.nat][c.num])||ABN[c.num];
 const I1='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4.5" y="2" width="7" height="12" rx="1.3" fill="currentColor"/></svg>';
 const I3='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="5.4" height="9" rx="1" fill="currentColor" opacity=".55" transform="rotate(-12 3.7 8.5)"/><rect x="9.6" y="4" width="5.4" height="9" rx="1" fill="currentColor" opacity=".55" transform="rotate(12 12.3 8.5)"/><rect x="5.3" y="2.5" width="5.4" height="10" rx="1" fill="currentColor"/></svg>';
 const STYLE={human:'万能・協調',elf:'速攻（形）',dwarf:'溜め（鍛え）',dragon:'溜め（一撃）',mermaid:'操作',fairy:'妨害（印）',beast:'速攻（枚数）',demon:'妨害（呪い）'};
 const pad2=n=>String(n).padStart(2,'0');
-const cimg=c=>`img/${c.nat}/${pad2(c.num)}.webp`;
+const cimg=c=>c.joker?'img/merc.webp':`img/${c.nat}/${pad2(c.num)}.webp`;
 const limg=l=>`img/land/${pad2(l.id+1)}.webp`;
 const LANDS=[
   {nm:'王都',pts:2,b:'同陣なら+2点',bf:(r,cs)=>r.kind==='same'?2:0},
-  {nm:'深き森',pts:1,b:'同国3枚なら+2点',bf:(r,cs)=>cs.every(c=>c.nat===cs[0].nat)?2:0},
+  {nm:'深き森',pts:1,b:'同国3枚なら+2点',bf:(r,cs)=>{const nj=cs.filter(c=>!c.joker);return nj.length&&nj.every(c=>c.nat===nj[0].nat)?2:0}},
   {nm:'竜の巣',pts:2,b:'9か10を含めば+2点',bf:(r,cs)=>r.vals.some(v=>v>=9)?2:0},
   {nm:'鉱山',pts:1,b:'1〜3だけなら+2点',bf:(r,cs)=>r.vals.every(v=>v<=3)?2:0},
   {nm:'丘陵',pts:0,b:'列陣なら+1点',bf:(r,cs)=>r.kind==='run'?1:0},
@@ -334,15 +349,18 @@ const LANDS=[
   {nm:'市場',pts:0,ef:'trade',e:'相手と手札を1枚交換'},
   {nm:'見張り塔',pts:0,ef:'watch',e:'次に出る土地を3枚から選ぶ'},
   {nm:'進軍路',pts:0,ef:'march',e:'次のターン2枚置ける'}];
-const txt=c=>(SWAP[c.nat]&&SWAP[c.nat][c.num])||BASE[c.num];
+const txt=c=>c.joker?MERC_TXT:(SWAP[c.nat]&&SWAP[c.nat][c.num])||BASE[c.num];
+const rname=c=>c.joker?'謎の傭兵団':ROLE[c.num-1];
+const fname=c=>c.joker?'謎の傭兵団':`${NAT[c.nat].n}の${ROLE[c.num-1]}`;
+const nl=c=>c.joker?'★':c.num;
 const kind=c=>c.num%2?'出陣効果':'攻略時効果';
-const cname=c=>`${NAT[c.nat].n}の${ROLE[c.num-1]}(${c.num})`;
+const cname=c=>c.joker?'謎の傭兵団':`${NAT[c.nat].n}の${ROLE[c.num-1]}(${c.num})`;
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 
 const LIVE=typeof window!=='undefined'&&!globalThis.SIM;
-const GAME='レギオン', VER='v0.1.3';
+const GAME='レギオン', VER='v0.2';
 let OPT={speed:'normal',diff:'normal',sound:true};
 try{const o=JSON.parse(localStorage.getItem('hk-opt')||'null'); if(o) OPT={...OPT,...o};}catch(e){}
 const saveOpt=()=>{try{localStorage.setItem('hk-opt',JSON.stringify(OPT))}catch(e){}};
@@ -369,31 +387,32 @@ function newGame(nats,leader,opp){
   G={p:[P('あなた',nats,leader,false),opp?{...P('相手',opp.nats,opp.leader,false),remote:true}:P('CPU',cpuN,cpuN[Math.random()*3|0],true)],
      lands:landDeck.splice(0,5),landDeck,stat:(typeof STATHOOK!=='undefined'?STATHOOK():null),cur:Math.random()<.5?0:1,log:[],over:false,turnNo:0};
   for(const p of G.p) for(let i=0;i<6;i++) p.hand.push(p.deck.pop());
+  for(const p of G.p) p.hand.push({id:++uid,nat:'merc',num:0,joker:true});
   log(`${G.p[G.cur].name}の先攻で開始`);
   render(); turn();
 }
 function log(s){G.log.unshift(s); if(G.log.length>40) G.log.pop(); render();}
-function draw(pi,n){const P=G.p[pi];let k=0;for(let i=0;i<n;i++){if(!P.deck.length&&P.discard.length){P.deck=shuffle(P.discard);P.discard=[];log(`${P.name}：墓地を切り直して山札に戻す`);}if(!P.deck.length)break;P.hand.push(P.deck.pop());k++}return k}
+function draw(pi,n){const P=G.p[pi];let k=0;for(let i=0;i<n;i++){if(!P.deck.length&&P.discard.length){P.deck=shuffle(P.discard.filter(c=>!c.joker));P.discard=P.discard.filter(c=>c.joker);log(`${P.name}：墓地を切り直して山札に戻す`);}if(!P.deck.length)break;P.hand.push(P.deck.pop());k++}return k}
 
 /* ---------- roles ---------- */
 const val=c=>c.mark?(c.num%10)+1:c.num;
 function evalRole(cs,pi){
   if(cs.length<3) return null;
-  const L=G.p[pi].leader, same=cs.every(c=>c.nat===cs[0].nat);
-  const opts=cs.map(c=>c.wild?[7,8,9,10]:[val(c)]);
+  const L=G.p[pi].leader, nj=cs.filter(c=>!c.joker), same=nj.length>0&&nj.every(c=>c.nat===nj[0].nat);
+  const opts=cs.map(c=>c.joker?[1,2,3,4,5,6,7,8,9,10]:c.wild?[7,8,9,10]:[val(c)]);
   let best=null;
   for(const a of opts[0]) for(const b of opts[1]) for(const d of opts[2]){
     const v=[a,b,d].sort((x,y)=>x-y); let r=null;
     if(v[0]===v[1]&&v[1]===v[2]) r={kind:'same',name:'同陣',pts:L==='dragon'?4:3};
     else{const r1=v[1]-v[0]===1&&v[2]-v[1]===1, r2=L==='elf'&&v[1]-v[0]===2&&v[2]-v[1]===2;
-      if(r1||r2) r={kind:'run',name:(same?'一国':'')+(r2&&!r1?'森の列陣':'列陣'),pts:(same||(L==='human'&&new Set(cs.map(c=>c.nat)).size===3))?2:1};}
-    if(r&&(!best||r.pts>best.pts)){r.vals=v;best=r;}
+      if(r1||r2) r={kind:'run',name:(same?'一国':'')+(r2&&!r1?'森の列陣':'列陣'),pts:(same||(L==='human'&&new Set(nj.map(c=>c.nat)).size===nj.length))?2:1};}
+    if(r&&(!best||r.pts>best.pts||(r.pts===best.pts&&Math.max(a,b,d)>Math.max(...best.vals)))){r.vals=v;r.jv=cs.map((c,i)=>c.joker?[a,b,d][i]:null).find(x=>x!=null);best=r;}
   }
   return best;
 }
 function possible(cs,pi){ // can the side still become a role with one more card?
   if(cs.length>=3) return false; if(cs.length<2) return true;
-  for(let v=1;v<=10;v++) if(evalRole([...cs,{nat:cs[0].nat,num:v}],pi)) return true; return false;
+  for(let v=1;v<=10;v++) if(evalRole([...cs,{nat:(cs.find(c=>!c.joker)||cs[0]).nat,num:v}],pi)) return true; return false;
 }
 const movable=(l,s)=>!l.imm[s]&&G.p[s].leader!=='dwarf';
 const affect=(l,s)=>!l.imm[s];
@@ -420,6 +439,7 @@ function resolveReq(v){const r=ui.resolve;ui.req=null;ui.resolve=null;ui.modal=n
 /* ---------- AI helpers ---------- */
 function threat(l,s){const c=l.sides[s];return c.length*2+(possible(c,s)?3:-2)+l.pts}
 function cardValue(pi,c){ // how useful a card in hand is: matches what is on our sides
+  if(c.joker) return 12;
   let v=c.num/10;
   for(const l of G.lands){const s=l.sides[pi]; if(s.length===2&&evalRole([...s,c],pi)) v+=4; else if(s.length===1&&possible([...s,c],pi)) v+=1;}
   return v;
@@ -470,12 +490,28 @@ async function turn(){
   if(!G.lands.length||G.turnNo>=200||G.p.some(empty)) return endGame();
   G.cur=1-pi; render(); turn();
 }
+function mercHold(){ const left=G.lands.length+G.landDeck.length; return left<=3?0:3; }
+function mercRisk(l,pi){ const o=1-pi, os=l.sides[o]; const p=os.length===2?(possible(os,o)?.55:.15):os.length===1?.25:.1; return p*2*(1+3.2*Math.min(1,(G.lands.length+G.landDeck.length)/12)); }
+function mercMove(pi){
+  const P=G.p[pi], J=P.hand.find(c=>c.joker); if(!J) return null;
+  if(OPT.diff==='easy'&&Math.random()<.5) return null;
+  let best=null,bv=-1e9; const H=mercHold();
+  for(const l of G.lands){ const side=l.sides[pi], n=side.length+1; if(n>3) continue;
+    let v=null;
+    if(n===3){ const pr=predict(pi,J,l); if(!pr) continue; const net=pr.pts-2; if(net<H) continue; v=20+net*2; }
+    else { const w=n===2?(possible(side,pi)?1.4:0.6)*(1+l.pts*.5+(l.bf?.4:0)):0.5*(1+l.pts*.3);
+      v=(w*1.6-(n-1)-mercRisk(l,pi))*1.5+2; if(n===2&&!possible(side,pi)) v-=3; }
+    v+=Math.random()*.4*NZ(); if(v>bv){bv=v;best={card:J,land:l,score:v};}
+  }
+  return best;
+}
 function aiPlace(pi){
   const P=G.p[pi]; let best=null,bs=-1e9;
-  for(const c of P.hand) for(const l of G.lands){const s=placeScore(pi,c,l); if(s>bs){bs=s;best={card:c,land:l}}}
+  for(const c of P.hand){ if(c.joker) continue; for(const l of G.lands){const s=placeScore(pi,c,l); if(s>bs){bs=s;best={card:c,land:l}}}}
+  const jm=mercMove(pi); if(jm&&(jm.score>bs||!best)){bs=jm.score;best={card:jm.card,land:jm.land};}
   for(const l of G.lands){const s=l.sides[pi]; if(!s.length||possible(s,pi)) continue;
     if(OPT.diff==='easy') break;
-    for(const c of P.hand){const ns=[...s.slice(0,-1),c]; if(possible(ns,pi)){const v=3.5+l.pts+Math.random(); if(v>bs){bs=v;best={card:c,land:l,swap:true}}}}}
+    for(const c of P.hand){ if(c.joker) continue; const ns=[...s.slice(0,-1),c]; if(possible(ns,pi)){const v=3.5+l.pts+Math.random(); if(v>bs){bs=v;best={card:c,land:l,swap:true}}}}}
   return best;
 }
 function swapTop(pi,card,land){
@@ -508,8 +544,10 @@ async function playCard(pi,card,land){
   const P=G.p[pi]; P.hand=P.hand.filter(c=>c.id!==card.id);
   const side=land.sides[pi], under=side[side.length-1];
   card.mark=0; card.wild=(card.nat==='dragon'&&card.num===9); G.lastPlaced=card;
-  side.push(card); log(`${P.name}：${cname(card)}を${land.nm}に置く`);
-  if(P.leader==='beast'&&under&&under.nat===card.nat&&draw(pi,1)) log(`${P.name}：獣人の盟約で1枚引く`);
+  const jc=card.joker?side.length:0;
+  side.push(card);
+  if(jc){ P.score-=jc; log(`${P.name}：傭兵団に${jc}点を払う`); } log(`${P.name}：${cname(card)}を${land.nm}に置く`);
+  if(P.leader==='beast'&&under&&(card.joker||under.joker||under.nat===card.nat)&&draw(pi,1)) log(`${P.name}：獣人の盟約で1枚引く`);
   SFX.place(); if(!P.cpu) await wait(150); else await wait(500);
   await resolveSide(land,pi);
   if(card.num%2&&!G.over) await onEnter(pi,card,land);
@@ -525,7 +563,7 @@ async function resolveSide(land,si){
 async function claim(land,si,role){
   const P=G.p[si], o=1-si, s=land.sides[si], top=s[s.length-1], cs=[...s];
   // triggers: the top card, plus (dwarf soldier) every even card under it
-  const trig=[top]; if(top.nat==='dwarf'&&top.num===2) for(const c of s.slice(0,-1)) if(c.num%2===0) trig.push(c);
+  const trig=[top.joker?{nat:(cs.find(c=>!c.joker)||top).nat,num:role.jv,id:top.id,virt:true}:top]; if(top.nat==='dwarf'&&top.num===2) for(const c of s.slice(0,-1)) if(c.num%2===0&&!c.joker) trig.push(c);
   let bonus=0,mult=1;
   for(const t of trig){
     if(t.num===2&&!(t.nat==='dwarf')) bonus+=1;
@@ -538,7 +576,9 @@ async function claim(land,si,role){
   const cursed=land.curse[si]; if(cursed) pts=G.p[o].leader==='demon'?0:Math.floor(pts/2);
   P.score+=pts; P.claims++; P.taken.push({land,cards:cs,pts}); G.stat&&G.stat.claim(si,pts,cs);
   netEmit({t:'claim',landId:land.id,pts}); if(LIVE) await flyLand(land,si,pts);
-  for(const c of land.sides[o]){c.mark=0;c.wild=false;} G.p[o].discard.push(...land.sides[o]);
+  for(const c of land.sides[o]){c.mark=0;c.wild=false;}
+  const turn=land.sides[o].filter(c=>c.joker); if(turn.length){ P.hand.push(...turn); log(`${G.p[o].name}の傭兵団が${P.name}に寝返った`); }
+  G.p[o].discard.push(...land.sides[o].filter(c=>!c.joker));
   for(const c of s){c.mark=0;c.wild=false;} P.won.push(...s);
   const i=G.lands.indexOf(land);
   let nl=null;
@@ -872,22 +912,23 @@ async function flyLand(land,si,pts){
 /* ---------- render ---------- */
 function chip(nat,leader){return emb(nat,leader)}
 const isSp=c=>!!(SWAP[c.nat]&&SWAP[c.nat][c.num]);
-function mini(c,top,glow){return `<div class="mc ${top?'tp':'dim'} ${isSp(c)?'sp':''} ${glow?'glow':''}" style="${cv(c.nat)}" data-info="${c.id}"><span class="th" style="background-image:url(${cimg(c)})"></span><span class="n">${c.wild?'竜':val(c)}</span><span class="r">${c.mark?'<b class="mk">✿</b>':''}${ROLE[c.num-1]}</span></div>`}
+const isJ=c=>!!c.joker;
+function mini(c,top,glow){return `<div class="mc ${top?'tp':'dim'} ${isSp(c)?'sp':''} ${isJ(c)?'mj':''} ${glow?'glow':''}" style="${cv(c.nat)}" data-info="${c.id}"><span class="th" style="background-image:url(${cimg(c)})"></span><span class="n">${c.joker?'★':c.wild?'竜':val(c)}</span><span class="r">${c.mark?'<b class="mk">✿</b>':''}${rname(c)}</span></div>`}
 function findCard(id){
   for(const p of G.p) for(const k of ['hand','discard','deck','won']){const c=p[k].find(x=>x.id===id); if(c) return c;}
   for(const l of G.lands) for(const s of l.sides){const c=s.find(x=>x.id===id); if(c) return c;}
   return null;
 }
-const kd=c=>c.num%2?`<span class="kd e" title="出陣効果（置いた時）">${I1}</span>`:`<span class="kd c" title="攻略時効果（この3枚目で陣形を完成させた時）">${I3}</span>`;
-const kdw=c=>c.num%2?`<span class="kd e wide">${I1}出陣</span>`:`<span class="kd c wide">${I3}攻略時</span>`;
-function infoFor(c){return `<span class="ci" style="${cv(c.nat)};background-image:url(${cimg(c)})"></span><div class="ib"><div class="in">${NAT[c.nat].n}の${ROLE[c.num-1]}<span style="font-family:var(--f-num)">${c.num}</span>${kdw(c)}${isSp(c)?'<span class="swt">✦ 国技</span>':''}</div>
+const kd=c=>c.joker?'':c.num%2?`<span class="kd e" title="出陣効果（置いた時）">${I1}</span>`:`<span class="kd c" title="攻略時効果（この3枚目で陣形を完成させた時）">${I3}</span>`;
+const kdw=c=>c.joker?'<span class="kd wide" style="background:#2b2a33">傭兵</span>':c.num%2?`<span class="kd e wide">${I1}出陣</span>`:`<span class="kd c wide">${I3}攻略時</span>`;
+function infoFor(c){return `<span class="ci" style="${cv(c.nat)};background-image:url(${cimg(c)})"></span><div class="ib"><div class="in">${fname(c)}<span style="font-family:var(--f-num)">${nl(c)}</span>${kdw(c)}${isSp(c)?'<span class="swt">✦ 国技</span>':''}</div>
   <div class="it"><b style="font-family:var(--f-disp)">${abn(c)}</b>　${esc(txt(c))}</div>${c.mark?`<div class="st2">✿ 花の印：${val(c)}として扱う</div>`:''}${c.wild?'<div class="st2" style="color:#9a3226">竜化：7〜10として扱う</div>':''}<div class="hint" style="font-size:.7rem">長押しで大きく表示</div></div>`}
 const landEff=l=>l.b?esc(l.b):esc(l.e);
 function landInfo(l){return `<span class="ci" style="--c3:#c9962e;background-image:url(${limg(l)})"></span><div class="ib"><div class="in">${l.nm}<span class="swt">${l.pts?'+'+l.pts+'点':'0点'}</span></div>
   <div class="it"><span class="kd wide" style="background:${l.b?'#6b7d3a':'#8a5a9e'}">攻略報酬</span> ${landEff(l)}</div></div>`}
-const smallCard=(c,extra='')=>`<button class="sc ${isSp(c)?'sp':''} ${extra}" style="${cv(c.nat)}" data-hand="${c.id}" aria-label="${NAT[c.nat].n}の${ROLE[c.num-1]} ${c.num}"><span class="sa" style="background-image:url(${cimg(c)})"></span><span class="sn">${c.num}</span><span class="sk">${c.num%2?I1:I3}</span></button>`;
-const handCard=(c,attr,extra='')=>`<button class="hc ${isSp(c)?'sp':''} ${extra}" style="${cv(c.nat)}" ${attr}><span class="in2"><span class="art" style="background-image:url(${cimg(c)})"></span>
-  <span class="r">${ROLE[c.num-1]}${kd(c)}</span><span class="k">${NAT[c.nat].n}・${abn(c)}</span></span><span class="n">${c.num}</span></button>`;
+const smallCard=(c,extra='')=>`<button class="sc ${isSp(c)?'sp':''} ${isJ(c)?'mj':''} ${extra}" style="${cv(c.nat)}" data-hand="${c.id}" aria-label="${fname(c)} ${c.num}"><span class="sa" style="background-image:url(${cimg(c)})"></span><span class="sn">${nl(c)}</span><span class="sk">${c.joker?'':c.num%2?I1:I3}</span></button>`;
+const handCard=(c,attr,extra='')=>`<button class="hc ${isSp(c)?'sp':''} ${isJ(c)?'mj':''} ${extra}" style="${cv(c.nat)}" ${attr}><span class="in2"><span class="art" style="background-image:url(${cimg(c)})"></span>
+  <span class="r">${rname(c)}${kd(c)}</span><span class="k">${NATX[c.nat].n}・${abn(c)}</span></span><span class="n">${nl(c)}</span></button>`;
 // what number(s) would complete my side of a land
 function needs(l,pi){const s=l.sides[pi]; if(s.length!==2||!possible(s,pi)) return [];
   const out=[]; for(let v=1;v<=10;v++) if(evalRole([...s,{nat:s[0].nat,num:v}],pi)) out.push(v); return out;}
@@ -915,10 +956,10 @@ function panel(P,pi,turn){
     ${isMe?`<div class="tr"><b>盟約</b>　${esc(NAT[P.leader].trait)}</div>`:''}
     ${!isMe?`<div class="opphand">${P.hand.map(c=>c.id===P.revealed&&G.p[0].leader==='fairy'?`<div class="back rv" data-info="${c.id}">${c.num}</div>`:'<div class="back"></div>').join('')}</div>`:''}</div>`;
 }
-function zoomCard(c){return `<div class="zc ${isSp(c)?'sp':''}" style="${cv(c.nat)}"><div class="zi"><div class="za" style="background-image:url(${cimg(c)})"></div>
-  <div class="zb"><div class="zt"><span>${ROLE[c.num-1]}</span><span style="display:flex;gap:6px;align-items:center">${emb(c.nat)}</span></div>
+function zoomCard(c){return `<div class="zc ${isSp(c)?'sp':''} ${isJ(c)?'mj':''}" style="${cv(c.nat)}"><div class="zi"><div class="za" style="background-image:url(${cimg(c)})"></div>
+  <div class="zb"><div class="zt"><span>${rname(c)}</span><span style="display:flex;gap:6px;align-items:center">${emb(c.nat)}</span></div>
   <div class="zab">${kdw(c)}${abn(c)}</div><div class="zx">${esc(txt(c))}</div>
-  <div style="margin-top:auto;font-size:.68rem;color:var(--faceMuted);font-family:var(--f-disp)">${NAT[c.nat].n}の${ROLE[c.num-1]}</div></div></div><div class="zn">${c.num}</div></div>`}
+  <div style="margin-top:auto;font-size:.68rem;color:var(--faceMuted);font-family:var(--f-disp)">${fname(c)}</div></div></div><div class="zn">${nl(c)}</div></div>`}
 function zoomLand(l,taken){return `<div class="zl" style="background-image:url(${limg(l)})"><div class="tb"><div class="nm">${l.nm}<span class="swt" style="font-size:.85rem">${l.pts?'+'+l.pts+'点':'0点'}</span></div>
   <div class="ef"><span class="kd wide" style="background:${l.b?'#6b7d3a':'#8a5a9e'}">攻略報酬</span> ${landEff(l)}</div>
   ${taken?`<div class="gv">凱旋 ${taken.cards.map(c=>`<span style="${cv(c.nat)};background-image:url(${cimg(c)})"></span>`).join('')}　+${taken.pts}点</div>`:''}</div></div>`}
@@ -936,7 +977,8 @@ function render(){
     const stt=[l.forge[1]?`<span class="fg">相手 鍛え${l.forge[1]}</span>`:'',l.curse[1]?'<span class="cu">相手 呪い</span>':'',l.forge[0]?`<span class="fg">自分 鍛え${l.forge[0]}</span>`:'',l.curse[0]?'<span class="cu">自分 呪い</span>':''].join('');
     const nd=needs(l,0);
     let pr='';
-    if(placing&&ui.sel&&!ui.swap&&m.length===2){const p=predict(0,ui.sel,l); pr=p?`<span class="pred">+${p.pts}</span>`:p===false?'<span class="pred bad">陣形にならない</span>':'';}
+    if(placing&&ui.sel&&!ui.swap&&m.length===2){const p=predict(0,ui.sel,l); pr=p?`<span class="pred">+${p.pts}${ui.sel.joker?'<small> 払い2</small>':''}</span>`:p===false?'<span class="pred bad">陣形にならない</span>':'';}
+    else if(placing&&ui.sel&&ui.sel.joker&&!ui.swap&&m.length<2) pr=`<span class="pred cost">払い${m.length}</span>`;
     h+=`<div class="land ${cand?'cand':''}" data-land="${i}" data-lid="${l.id}" tabindex="0" role="button" aria-label="${l.nm}">
       <div class="stack opp">${o.length<3?'<div class="slot"></div>':''}${o.map((c,k)=>mini(c,k===o.length-1)).join('')}</div>
       <div class="tile ${glow?'glow':''}" style="background-image:url(${limg(l)})"><span class="pt ${l.pts?'':'z'}">${l.pts?'+'+l.pts:'0'}</span>${pr}
@@ -955,7 +997,7 @@ function render(){
   const hcls=c=>[ui.sel&&ui.sel.id===c.id?'sel':'',G.cur===0&&fits(c,0)?'fit':''].join(' ');
   h+=`<div class="handrow"><div class="${OPT.bigHand?'hand':'hand mini2'}">${me.hand.map(c=>OPT.bigHand?handCard(c,`data-hand="${c.id}"`,hcls(c)):smallCard(c,hcls(c))).join('')}</div><button id="handSize" class="hsz" title="手札の大きさ">${OPT.bigHand?'小':'大'}</button></div></div>`;
   h+=`<details class="log"><summary>${esc(G.log[0]||'')}</summary><div class="ls">${G.log.slice(1,30).map(s=>`<div>${esc(s)}</div>`).join('')}</div></details>`;
-  if(ui.pop){const c=ui.pop.c; h+=`<div class="pop" style="${cv(c.nat)}"><span class="pi" style="background-image:url(${cimg(c)})"></span><div><div class="pw">${NAT[c.nat].n}の${ROLE[c.num-1]}　${c.num%2?'出陣効果':'攻略時効果'}${isSp(c)?'　✦国技':''}</div><div class="pn">${abn(c)}</div><div class="pt2">${esc(txt(c))}</div></div></div>`;}
+  if(ui.pop){const c=ui.pop.c; h+=`<div class="pop" style="${cv(c.nat)}"><span class="pi" style="background-image:url(${cimg(c)})"></span><div><div class="pw">${fname(c)}　${c.num%2?'出陣効果':'攻略時効果'}${isSp(c)?'　✦国技':''}</div><div class="pn">${abn(c)}</div><div class="pt2">${esc(txt(c))}</div></div></div>`;}
   if(ui.modal==='pick'&&req&&req.type==='card') h+=renderPick(req);
   if(ui.modal==='rules') h+=renderRules();
   if(ui.modal==='end') h+=renderEnd();
@@ -969,7 +1011,7 @@ function render(){
 }
 function renderGrave(pi){const P=G.p[pi];
   return `<div class="ov"><div class="sheet orn" style="position:relative"><h2>${pi===0?'あなた':'CPU'}の墓地（${P.discard.length}枚）</h2>
-   ${P.discard.length?`<div class="ggrid">${P.discard.map(c=>`<button class="gc" style="${cv(c.nat)};background-image:url(${cimg(c)})" data-zoomc="${c.id}"><b>${c.num}</b></button>`).join('')}</div>`:'<p class="muted">まだ墓地にカードはありません。</p>'}
+   ${P.discard.length?`<div class="ggrid">${P.discard.map(c=>`<button class="gc" style="${cv(c.nat)};background-image:url(${cimg(c)})" data-zoomc="${c.id}"><b>${nl(c)}</b></button>`).join('')}</div>`:'<p class="muted">まだ墓地にカードはありません。</p>'}
    <p class="muted">山札 ${P.deck.length}枚（中身は見られません）</p><button id="graveClose">閉じる</button></div></div>`;}
 function renderPick(req){
   return `<div class="ov"><div class="sheet orn" style="position:relative"><h2>${esc(req.prompt)}</h2>
@@ -999,6 +1041,8 @@ function renderRules(){
   <p>陣形ができたらその土地を<b>攻略</b>：陣形の点＋土地の点を得て、使った3枚は<b>凱旋</b>として土地と一緒に自分の陣地へ。相手側のカードは<b>墓地</b>へ。3枚で陣形にならなければ、一番下が墓地へ落ちる。</p>
   <h3>効果</h3>
   <p><span class="kd e wide">${I1}出陣</span> 奇数のカードは置いた時に発動。<br><span class="kd c wide">${I3}攻略時</span> 偶数のカードは、3枚目として置いて陣形を完成させた時に発動。<br>金色に光るカードはその国だけの<b>国技</b>。</p>
+  <h3>謎の傭兵団</h3>
+  <p>お互い、最初の手札に<b>謎の傭兵団</b>を1枚持って始める（デッキ30枚＋1枚）。好きな数字・好きな国として使える。置く時、その土地の自分側にすでにある枚数だけ点を払う（1枚目0点・2枚目1点・3枚目2点）。傭兵団が乗った土地を相手に攻略されたら、傭兵団は相手の手札に<b>寝返る</b>。</p>
   <h3>国と盟約</h3>
   <p>3か国でデッキ（30枚）を組み、1つを盟主にする。盟主の国の<b>盟約</b>だけが有効。</p>
   <p class="muted">特別な状態：<b>鍛え</b>（ドワーフ・溜めるほど得点+）／<b>花の印</b>（フェアリー・数字+1）／<b>呪い</b>（魔族・攻略時の得点半分）／<b>竜化</b>（ドラゴニュート9・7〜10として扱う）</p>
@@ -1015,7 +1059,7 @@ function renderSetup(){
     <p class="muted">${esc(NET.status)}</p><div class="spin"></div><p class="muted" style="font-size:.72rem">中継サーバー ${NET.relay||'接続中…'}</p><button id="cancelNet">やめる</button></div>`;
   return `<div class="top"><h1>${GAME}<span class="ver">${VER}</span></h1><div class="row opts"><a class="btnlink" href="cards.html">カード一覧</a><button id="rulesBtn0">ルール</button></div></div>
   <div class="seg modes"><button data-mode="cpu" aria-pressed="${!net}">CPUと対戦</button><button data-mode="net" aria-pressed="${net}">友だちと対戦</button></div>
-  <p class="lead">3か国を選び、もう一度押した国が盟主になる。デッキは30枚。${net?'部屋を作った人は合言葉を相手に伝え、相手は合言葉を入れて入る。':'CPUの国はランダム。'}</p>
+  <p class="lead">3か国を選び、もう一度押した国が盟主になる。デッキは30枚＋謎の傭兵団1枚。${net?'部屋を作った人は合言葉を相手に伝え、相手は合言葉を入れて入る。':'CPUの国はランダム。'}</p>
   ${NET.err?`<p class="neterr">${esc(NET.err)}</p>`:''}
   <div class="setrow">${net?'':`<label>CPUの強さ ${seg('diff',DFN)}</label>`}<label>速さ ${seg('speed',SPN)}</label><label>音 ${seg('sound',{true:'オン',false:'オフ'})}</label></div>
   <div class="ngrid">${Object.entries(NAT).map(([k,v])=>{const sel=s.sel.includes(k), ld=s.leader===k;
