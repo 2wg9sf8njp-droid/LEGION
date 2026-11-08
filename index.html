@@ -347,6 +347,16 @@ h1{white-space:nowrap}
 .plog .pl{font-size:.78rem;line-height:1.35;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .plog .pl.new{color:var(--ink);font-weight:500;animation:plin .3s ease-out}
 @keyframes plin{from{opacity:0;transform:translateY(4px)}}
+
+.mc.fl{box-shadow:0 0 0 2px #e98ab8,0 0 10px rgba(236,140,190,.7)}
+.mc.fl .n{color:#fff;background:#d0629a;border-radius:999px;min-width:1.5em;padding:0 3px;font-size:.92rem}
+.mc .th{position:relative}
+.mc .fb{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-size:1.05rem;color:#fff;text-shadow:0 0 4px #d0629a,0 0 8px #d0629a;background:rgba(208,98,154,.35)}
+.mc .mk{color:#b65a88;font-size:.58rem;margin-right:3px}
+.flpulse{animation:flp .5s ease-in-out 3}
+@keyframes flp{50%{transform:scale(1.12);box-shadow:0 0 0 3px #f7b6d6,0 0 18px 6px rgba(236,140,190,.9)}}
+.vban.flw{background:linear-gradient(180deg,rgba(80,30,60,.96),rgba(36,14,30,.96));border-color:#e98ab8}
+.vban.flw .vt{color:#ffd6ea}
 @media (prefers-reduced-motion:reduce){.hc.sel,.nat:hover{transform:none}}
 </style>
 
@@ -431,7 +441,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 
 const LIVE=typeof window!=='undefined'&&!globalThis.SIM;
-const GAME='レギオン', VER='v0.4';
+const GAME='レギオン', VER='v0.4.1';
 let OPT={speed:'normal',diff:'normal',sound:true};
 try{const o=JSON.parse(localStorage.getItem('hk-opt')||'null'); if(o) OPT={...OPT,...o};}catch(e){}
 const saveOpt=()=>{try{localStorage.setItem('hk-opt',JSON.stringify(OPT))}catch(e){}};
@@ -538,7 +548,7 @@ async function turn(){
   const pi=G.cur, P=G.p[pi], O=G.p[1-pi];
   if(!P.hand.length||!G.lands.length) return endGame();
   G.turnNo++;
-  for(const l of G.lands) for(const c of l.sides[1-pi]) if(c.flower){ c.fv=1+(Math.random()*10|0); }
+  { const ch=[]; for(const l of G.lands) for(const c of l.sides[1-pi]) if(c.flower){ c.fv=1+(Math.random()*10|0); ch.push(`${rname(c)}→${c.fv}`); } if(ch.length) log(`花の印で数字が変わる：${ch.join('、')}`); }
   for(const l of G.lands) if(l.forge[pi]&&l.forge[pi]<3&&l.sides[pi].length===2){l.forge[pi]++; log(`${P.name}：${l.nm}の鍛えが${l.forge[pi]}に`);}
   // fairy: the opponent of a fairy leader keeps one card revealed
   for(const [a,b] of [[0,1],[1,0]]) if(false){const h=G.p[b].hand; if(!h.some(c=>c.id===G.p[b].revealed)) G.p[b].revealed=h.length?h[Math.random()*h.length|0].id:null;}
@@ -718,13 +728,20 @@ async function placeExtra(pi,cands,label,noAbility){
 }
 const ABV={1:1,3:2.2,5:2,7:1.6,9:3};
 function compCount(cs,pi){ if(cs.length!==2) return cs.length<2?5:0; let k=0; for(let v=1;v<=10;v++) if(evalRole([...cs,{nat:cs[0].nat,num:v}],pi)) k++; return k; }
+async function markFx(c,label,remote){
+  if(!LIVE) return; if(!remote) netEmit({t:'mark',c:sc(c),label});
+  const el=document.querySelector(`[data-info="${c.id}"]`); if(el){ el.classList.add('flpulse'); }
+  const b=document.createElement('div'); b.className='vban flw'; const dur=1200*(SPD[OPT.speed]||1); b.style.setProperty('--d',dur+'ms');
+  b.innerHTML=`<div class="vt">✿ ${esc(label)}</div><div class="vc"><span style="${cv(c.nat)};background-image:url(${cimg(c)})"><b>${nl(c)}</b></span></div>`;
+  document.body.appendChild(b); setTimeout(()=>b.remove(),dur+300); SFX.ability(); await wait(dur);
+}
 async function flowerMark(pi,tag,optional){
   const o=1-pi, cands=[]; for(const l of G.lands) for(const c of l.sides[o]) if(!c.flower&&!c.joker) cands.push({l,c,s:o});
   if(!cands.length) return;
   const sc0=x=>{const a=x.l.sides[o]; return (a.length===2&&possible(a,o)?4:a.length===2?1:.5)+x.l.pts*.3;};
   const pick=await chooseCard(pi,'花の印：印を付ける相手のカード',cands.map(x=>({...x.c,_x:x})),y=>sc0(y._x),!!optional);
   if(!pick) return log(`${tag}：印を付けない`);
-  const c=pick._x.c; c.flower=1; c.fv=c.num; if(G.stat) G.stat.ev('fairy_mark'); log(`${tag}：${pick._x.l.nm}の${cname(c)}に花の印`);
+  const c=pick._x.c; c.flower=1; c.fv=c.num; render(); await markFx(c,`花の印：${pick._x.l.nm}の${rname(c)}に付けた`); if(G.stat) G.stat.ev('fairy_mark'); log(`${tag}：${pick._x.l.nm}の${cname(c)}に花の印`);
 }
 function sideVal(side,s){ if(side.length===3) return evalRole(side,s)?20:-6; if(side.length===2) return possible(side,s)?compCount(side,s)*.8:-2; return side.length?1:0; }
 async function fairySwap(pi){
@@ -1034,6 +1051,7 @@ function netOnGuest(m){
     render(); return; }
   if(m.t==='fx'){ if(OPT.sound) SFX.ability(); ui.pop={c:m.c}; ui.glow=m.landId; render(); clearTimeout(NET.ft); NET.ft=setTimeout(()=>{ui.pop=null;ui.glow=null;render();},1150*(SPD[OPT.speed]||1)); return; }
   if(m.t==='sfx'){ SFX[m.k]&&SFX[m.k](); return; }
+  if(m.t==='mark'){ markFx(m.c,m.label,true); return; }
   if(m.t==='vanish'){ vanish(m.cards,m.label.replace(/あなた側|相手側/,x=>x==='あなた側'?'相手側':'あなた側'),m.kind,true); return; }
   if(m.t==='claim'){ SFX.claim(); const src=document.querySelector(`[data-lid="${m.landId}"] .tile`); const r=src&&src.getBoundingClientRect();
     if(r){ const f=document.createElement('div'); f.className='fly'; f.textContent='+'+m.pts; f.style.left=(r.left+r.width/2)+'px'; f.style.top=(r.top+r.height/3)+'px'; document.body.appendChild(f); setTimeout(()=>f.remove(),1400); } return; }
@@ -1057,7 +1075,7 @@ async function flyLand(land,si,pts){
 function chip(nat,leader){return emb(nat,leader)}
 const isSp=c=>!!(SWAP[c.nat]&&SWAP[c.nat][c.num]);
 const isJ=c=>!!c.joker;
-function mini(c,top,glow){return `<div class="mc ${top?'tp':'dim'} ${isSp(c)?'sp':''} ${isJ(c)?'mj':''} ${glow?'glow':''}" style="${cv(c.nat)}" data-info="${c.id}"><span class="th" style="background-image:url(${cimg(c)})"></span><span class="n">${c.joker?'★':c.wild?'竜':val(c)}</span><span class="r">${c.mark||c.flower?'<b class="mk">✿</b>':''}${rname(c)}</span></div>`}
+function mini(c,top,glow){return `<div class="mc ${top?'tp':'dim'} ${isSp(c)?'sp':''} ${isJ(c)?'mj':''} ${glow?'glow':''} ${c.flower?'fl':''}" style="${cv(c.nat)}" data-info="${c.id}"><span class="th" style="background-image:url(${cimg(c)})">${c.flower?'<i class="fb">✿</i>':''}</span><span class="n">${c.joker?'★':c.wild?'竜':val(c)}</span><span class="r">${c.flower?`<b class="mk">元${c.num}</b>`:c.mark?'<b class="mk">✿</b>':''}${rname(c)}</span></div>`}
 function findCard(id){
   for(const p of G.p) for(const k of ['hand','discard','deck','won']){const c=p[k].find(x=>x.id===id); if(c) return c;}
   for(const l of G.lands) for(const s of l.sides){const c=s.find(x=>x.id===id); if(c) return c;}
@@ -1066,7 +1084,7 @@ function findCard(id){
 const kd=c=>c.joker?'':c.num%2?`<span class="kd e" title="出陣効果（置いた時）">${I1}</span>`:`<span class="kd c" title="攻略時効果（この3枚目で陣形を完成させた時）">${I3}</span>`;
 const kdw=c=>c.joker?'<span class="kd wide" style="background:#2b2a33">傭兵</span>':c.num%2?`<span class="kd e wide">${I1}出陣</span>`:`<span class="kd c wide">${I3}攻略時</span>`;
 function infoFor(c){return `<span class="ci" style="${cv(c.nat)};background-image:url(${cimg(c)})"></span><div class="ib"><div class="in">${fname(c)}<span style="font-family:var(--f-num)">${nl(c)}</span>${kdw(c)}${isSp(c)?'<span class="swt">✦ 国技</span>':''}</div>
-  <div class="it"><b style="font-family:var(--f-disp)">${abn(c)}</b>　${esc(txt(c))}</div>${c.mark?`<div class="st2">✿ 花の印：${val(c)}として扱う</div>`:''}${c.wild?'<div class="st2" style="color:#9a3226">竜化：7〜10として扱う</div>':''}<div class="hint" style="font-size:.7rem">長押しで大きく表示</div></div>`}
+  <div class="it"><b style="font-family:var(--f-disp)">${abn(c)}</b>　${esc(txt(c))}</div>${c.flower?`<div class="st2">✿ 花の印：今は${val(c)}として扱う（元は${c.num}。印を付けた側のターンが来るたびランダムに変わる）</div>`:c.mark?`<div class="st2">✿ 花の印：${val(c)}として扱う</div>`:''}${c.wild?'<div class="st2" style="color:#9a3226">竜化：7〜10として扱う</div>':''}<div class="hint" style="font-size:.7rem">長押しで大きく表示</div></div>`}
 const landEff=l=>l.b?esc(l.b):esc(l.e);
 function landInfo(l){return `<span class="ci" style="--c3:#c9962e;background-image:url(${limg(l)})"></span><div class="ib"><div class="in">${l.nm}<span class="swt">${l.pts?'+'+l.pts+'点':'0点'}</span></div>
   <div class="it"><span class="kd wide" style="background:${l.b?'#6b7d3a':'#8a5a9e'}">攻略報酬</span> ${landEff(l)}</div></div>`}
