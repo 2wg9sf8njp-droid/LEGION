@@ -307,6 +307,19 @@ h1{white-space:nowrap}
 .mbadge{display:inline-flex;align-items:center;gap:3px;font-weight:700;color:#f0d27c;background:#1e1d25;border:1px solid #c9a24e;border-radius:999px;padding:0 7px 0 4px;font-size:.7rem}
 .mbadge svg{width:12px;height:12px;stroke:#f0d27c;fill:none}
 @media (prefers-reduced-motion:reduce){.fc{transition:none}}
+.sccol{display:flex;flex-direction:column;align-items:center;gap:5px}
+.recbtn{padding:2px 10px;font-size:.7rem;border-radius:999px;border-color:rgba(217,178,90,.5);color:var(--gold)}
+.rtabs{display:flex;gap:4px}.rtabs button{padding:4px 14px;font-size:.8rem;border-radius:999px}.rtabs button[aria-pressed="true"]{background:linear-gradient(180deg,#f0d27c,#c9962e);color:#2a1c04;font-weight:700;border-color:#7a5618}
+.rsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));gap:6px}
+.rsum div{background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center;font-size:.7rem;color:var(--muted)}
+.rsum b{display:block;font-family:var(--f-num);font-size:1.25rem;color:var(--ink)}
+.rsum .rm{border-color:#c9a24e}.rsum .rm b{color:#f0d27c}
+.rtk{display:flex;flex-direction:column;gap:6px}
+.rt{display:flex;gap:8px;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:8px;padding:6px}
+.rl{flex:none;width:44px;aspect-ratio:3/4;border-radius:5px;background:center/cover;box-shadow:0 0 0 1.5px var(--gold)}
+.rb{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.rn{font-family:var(--f-disp);font-weight:700;display:flex;gap:6px;align-items:center}
+.rc{display:flex;gap:4px}.rc .gc{width:40px}
 @media (prefers-reduced-motion:reduce){.hc.sel,.nat:hover{transform:none}}
 </style>
 
@@ -391,7 +404,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 
 const LIVE=typeof window!=='undefined'&&!globalThis.SIM;
-const GAME='レギオン', VER='v0.3';
+const GAME='レギオン', VER='v0.3.1';
 let OPT={speed:'normal',diff:'normal',sound:true};
 try{const o=JSON.parse(localStorage.getItem('hk-opt')||'null'); if(o) OPT={...OPT,...o};}catch(e){}
 const saveOpt=()=>{try{localStorage.setItem('hk-opt',JSON.stringify(OPT))}catch(e){}};
@@ -988,12 +1001,12 @@ function predict(pi,c,l){
 function panel(P,pi,turn){
   const isMe=pi===0;
   const nj=P.hand.filter(c=>c.joker).length, nh=P.hand.length-nj;
-  const st=[isMe?'':`手札 ${nh}`,`山札 ${P.deck.length}`,`<button data-grave="${pi}">墓地 ${P.discard.length}</button>`].filter(Boolean);
+  const st=[isMe?'':`手札 ${nh}`,`山札 ${P.deck.length}`,`墓地 ${P.discard.length}`].filter(Boolean);
   if(isMe&&P.extra) st.push('<b style="color:var(--gold)">次は2枚置ける</b>');
   if(nj) st.push(`<span class="mbadge" title="謎の傭兵団を${nj}枚持っている">${EMB.merc}傭兵団 ×${nj}</span>`);
   return `<div class="pp orn ${turn?'turn':''}"><span class="tn">ターン</span><div class="embs">${P.nats.map(x=>chip(x,x===P.leader)).join('')}</div>
     <div class="who"><div class="nm">${isMe?'あなた':NET.role?'相手':'CPU（'+DFN[OPT.diff]+'）'}</div><div class="st">${st.map(x=>`<span>${x}</span>`).join('')}</div></div>
-    <div class="score" title="得点">${P.score}</div>
+    <div class="sccol"><div class="score" title="得点">${P.score}</div><button class="recbtn" data-grave="${pi}">記録</button></div>
     <div class="taken" id="taken${pi}"><span class="lbl">攻略 ${P.claims}</span>${P.taken.map((t,k)=>`<button class="tk" data-taken="${pi}:${k}" style="background-image:url(${limg(t.land)})" title="${t.land.nm} +${t.pts}"></button>`).join('')}</div>
     ${isMe?`<div class="tr"><b>盟約</b>　${esc(NAT[P.leader].trait)}</div>`:''}
     ${!isMe?`<div class="opphand">${P.hand.filter(c=>!c.joker).map(c=>c.id===P.revealed&&G.p[0].leader==='fairy'?`<div class="back rv" data-info="${c.id}">${c.num}</div>`:'<div class="back"></div>').join('')}</div>`:''}</div>`;
@@ -1051,10 +1064,19 @@ function render(){
   if(open) app.querySelector('details.log').open=true;
   netPush();
 }
-function renderGrave(pi){const P=G.p[pi];
-  return `<div class="ov"><div class="sheet orn" style="position:relative"><h2>${pi===0?'あなた':'CPU'}の墓地（${P.discard.length}枚）</h2>
-   ${P.discard.length?`<div class="ggrid">${P.discard.map(c=>`<button class="gc" style="${cv(c.nat)};background-image:url(${cimg(c)})" data-zoomc="${c.id}"><b>${nl(c)}</b></button>`).join('')}</div>`:'<p class="muted">まだ墓地にカードはありません。</p>'}
-   <p class="muted">山札 ${P.deck.length}枚（中身は見られません）</p><button id="graveClose">閉じる</button></div></div>`;}
+function renderGrave(pi){const P=G.p[pi], me=pi===0, who=me?'あなた':(NET.role||G.remoteView?'相手':'CPU');
+  const nj=P.hand.filter(c=>c.joker).length, nh=P.hand.length-nj;
+  const gc=c=>`<button class="gc" style="${cv(c.nat)};background-image:url(${cimg(c)})" data-zoomc="${c.id}"><b>${nl(c)}</b></button>`;
+  const byNum=[...P.discard].sort((a,b)=>(a.num||99)-(b.num||99));
+  return `<div class="ov"><div class="sheet orn rec" style="position:relative">
+   <div class="rtabs"><button data-grave="1" aria-pressed="${!me}">${G.p[1]&&(NET.role||G.remoteView)?'相手':'CPU'}</button><button data-grave="0" aria-pressed="${me}">あなた</button></div>
+   <h2>${who}の記録</h2>
+   <div class="rsum"><div><b>${nh}</b>手札</div>${nj?`<div class="rm"><b>${nj}</b>傭兵団</div>`:''}<div><b>${P.deck.length}</b>山札</div><div><b>${P.discard.length}</b>墓地</div><div><b>${P.claims}</b>攻略</div><div><b>${P.score}</b>得点</div></div>
+   <h3>攻略した土地</h3>
+   ${P.taken.length?`<div class="rtk">${P.taken.map(t=>`<div class="rt"><span class="rl" style="background-image:url(${limg(t.land)})"></span><div class="rb"><div class="rn">${esc(t.land.nm)}<span class="swt">+${t.pts}点</span></div><div class="rc">${t.cards.map(gc).join('')}</div></div></div>`).join('')}</div>`:'<p class="muted">まだ攻略した土地はありません。</p>'}
+   <h3>墓地（数字順）</h3>
+   ${P.discard.length?`<div class="ggrid">${byNum.map(gc).join('')}</div>`:'<p class="muted">まだ墓地にカードはありません。</p>'}
+   <p class="muted">山札と手札の中身は見られません。カードを押すと大きく表示します。</p><button id="graveClose">閉じる</button></div></div>`;}
 function renderPick(req){
   return `<div class="ov"><div class="sheet orn" style="position:relative"><h2>${esc(req.prompt)}</h2>
    <div class="hand">${req.cards.map((c,i)=>c.nm?`<button class="hc land2" style="--c1:#f6e6b8;--c2:#d9b25a;--c3:#8a6420" data-picki="${i}"><span class="in2"><span class="art" style="background-image:url(${limg(c)})"></span><span class="r">${esc(c.nm)}</span><span class="k">${c.pts?'+'+c.pts+'点 ':''}${landEff(c)}</span></span></button>`
