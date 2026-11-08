@@ -81,7 +81,7 @@ button:focus-visible,.hc:focus-visible,.land:focus-visible{outline:2px solid var
 .tg.bonus{background:#6b7d3a}.tg.gain{background:#8a5a9e}
 .tile .st{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin:0 3px 3px}
 .tile .st span{font-size:.54rem;white-space:nowrap;font-weight:700;color:#fff;border-radius:3px;padding:0 4px;box-shadow:0 1px 2px rgba(0,0,0,.5)}
-.st .fg{background:#b0602a}.st .cu{background:#5a388e}
+.st .fg{background:#b0602a}.st .tr{background:#3c7a45}.st .fl{background:#b65a88}.st .cu{background:#5a388e}
 .remain{text-align:center;font-size:.72rem;color:var(--muted)}
 /* prompt + info */
 .prompt{background:linear-gradient(90deg,#24415e,#2f557a);color:#fff;border:1px solid #4d79a3;border-radius:10px;padding:7px 10px;display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:.88rem;font-weight:500}
@@ -358,13 +358,13 @@ h1{white-space:nowrap}
 <script>
 const NAT={
   human:{n:'人',c:'#3d7ea6',trait:'3か国バラバラの列陣も2点'},
-  elf:{n:'エルフ',c:'#3c7a45',trait:'1つ飛ばしの列陣（2-4-6など）も陣形になる（森の列陣）'},
-  dwarf:{n:'ドワーフ',c:'#b0602a',trait:'自分のカードは相手の効果で動かされない'},
-  dragon:{n:'ドラゴニュート',c:'#9a3226',trait:'同陣が4点'},
-  mermaid:{n:'人魚',c:'#2c4c92',trait:'毎ターン1回、自分の一番上を別の土地へ移せる（潮流）。移して陣形が完成したら1枚引く'},
-  fairy:{n:'フェアリー',c:'#b65a88',trait:'フェアリーのカードを置いたターン、場の一番上1枚に花の印を付けられる'},
+  elf:{n:'エルフ',c:'#3c7a45',trait:'攻略した場所に木が育つ。同じ場所を続けて攻略するたび得点+1、+2、+3…（相手にその場所を攻略されると木は倒れる）'},
+  dwarf:{n:'ドワーフ',c:'#b0602a',trait:'自分側にドワーフのカードがある土地は、相手の効果で動かされない'},
+  dragon:{n:'ドラゴニュート',c:'#9a3226',trait:'攻略するたび、相手の手札をランダムに1枚墓地に送る'},
+  mermaid:{n:'人魚',c:'#2c4c92',trait:'毎ターン1回、自分の一番上を別の土地へ移せる（潮流）。攻略した時、凱旋の1枚を山札に戻して切れる'},
+  fairy:{n:'フェアリー',c:'#b65a88',trait:'フェアリーのカードを置いたターン、相手の場のカード1枚に花の印を付けられる。印の付いたカードの数字は、自分のターンが来るたびランダムに変わる'},
   beast:{n:'獣人',c:'#8c95a5',trait:'同じ国のカードの上に重ねると1枚引く'},
-  demon:{n:'魔族',c:'#5a388e',trait:'墓地が8枚以上なら陣形の得点+1。自分の呪いは得点を0にする'},
+  demon:{n:'魔族',c:'#5a388e',trait:'ターンの終わりに手札1枚を墓地に送ってよい。攻略するたび、墓地から1枚を自分の土地に置ける（出陣効果なし）'},
 };
 const EMB={
  merc:'<svg viewBox="0 0 24 24"><path d="M12 2l7 10-7 10-7-10z" fill="none" stroke-width="1.8"/><path d="M12 5v14M9 8.5h6" fill="none" stroke-width="1.8"/></svg>',
@@ -389,17 +389,17 @@ const ROLE=['民','兵士','斥候','商人','騎士','魔術師','聖職者','�
 const BASE={1:'1枚引く',2:'この陣形の得点+1',3:'相手の一番上を別の土地へ動かす',4:'山札から好きなカードを1枚手札に加え、山札を切る',5:'同じ土地の相手の一番上を相手の手札に押し返す',6:'相手の土地1つの相手側を、すべて墓地に送る',7:'墓地から1枚手札に戻す',8:'相手の手札を見て数字を1つ選び、その数字のカードをすべて墓地に送らせる',9:'もう1枚、別の土地に置ける',10:'この土地の得点を2倍にする'};
 const SWAP={
   human:{4:'山札から、この陣形に使っていない国のカードを2枚まで手札に加え、山札を切る',10:'この陣形が3か国バラバラなら得点3倍（そうでなければ2倍）'},
-  elf:{3:'山札の上3枚を見て1枚を手札に加え、残りは山札の上に戻す',6:'手札から1枚を、自分の別の土地に置く（出陣効果は発動しない）'},
+  elf:{3:'自分か相手の一番上を、別の土地へ動かす',6:'隣り合う2つの土地を選び、両方の相手側をすべて墓地に送る'},
   dwarf:{2:'このカードの下にある偶数のカードの攻略時効果も発動する',5:'この土地に「鍛え」を置く。2枚でターンを迎えるたび+1（最大3）。攻略時、鍛えの数だけ得点+'},
   dragon:{9:'この土地では、このカードを7〜10の好きな数字として扱う',10:'得点2倍の代わりに、相手のすべての土地で一番上を墓地に送る'},
-  mermaid:{3:'同じ土地で自分と相手の一番上を入れ替える',7:'自分の土地の一番上のカード1枚を手札に戻す'},
-  fairy:{1:'場の一番上のカード1枚に「花の印」を付ける（数字+1、10は1になる）',8:'印の付いた相手のカードを、すべて相手の手札に押し返す'},
+  mermaid:{3:'相手の一番上を、相手の山札の一番上に戻す',7:'墓地から1枚を選び、自分の土地に置く（出陣効果は発動しない）'},
+  fairy:{1:'1枚引き、相手の場のカード1枚に「花の印」を付ける（数字がランダムに変わり続ける）',8:'相手の場のカード2枚に「花の印」を付ける（数字がランダムに変わり続ける）'},
   beast:{1:'この土地の自分側に他の獣人がいれば、もう1枚この土地に置ける',9:'もう1枚、別の土地に置ける。置いたのが獣人なら、さらに1枚置ける'},
-  demon:{1:'自分の土地の一番上のカード1枚を墓地に送り、その出陣効果を発動する',7:'相手の土地1つに「呪い」を置く。相手がそこを攻略すると得点が半分（切り捨て）'},
+  demon:{1:'自分の土地の一番上のカード1枚を墓地に送り、その出陣効果を発動して、1枚引く',7:'相手の土地1つに「呪い」を置く。相手がそこを攻略すると得点は0'},
 };
 const ABN={1:'補給',2:'鼓舞',3:'撹乱',4:'調達',5:'押し返し',6:'殲滅',7:'祈り',8:'看破',9:'進軍',10:'王命'};
-const SABN={human:{4:'交易',10:'同盟の王'},elf:{3:'先読み',6:'芽吹き'},dwarf:{2:'重ね打ち',5:'鍛造'},dragon:{9:'竜化',10:'業火'},
-  mermaid:{3:'渦潮',7:'還流'},fairy:{1:'花の印',8:'妖精のいたずら'},beast:{1:'群れ呼び',9:'狩りの号令'},demon:{1:'生贄',7:'呪縛'}};
+const SABN={human:{4:'交易',10:'同盟の王'},elf:{3:'疾風',6:'森の挟撃'},dwarf:{2:'重ね打ち',5:'鍛造'},dragon:{9:'竜化',10:'業火'},
+  mermaid:{3:'引き潮',7:'満ち潮'},fairy:{1:'花の印',8:'妖精のいたずら'},beast:{1:'群れ呼び',9:'狩りの号令'},demon:{1:'生贄',7:'呪縛'}};
 const abn=c=>c.joker?'傭兵契約':(SABN[c.nat]&&SABN[c.nat][c.num])||ABN[c.num];
 const I1='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4.5" y="2" width="7" height="12" rx="1.3" fill="currentColor"/></svg>';
 const I3='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="5.4" height="9" rx="1" fill="currentColor" opacity=".55" transform="rotate(-12 3.7 8.5)"/><rect x="9.6" y="4" width="5.4" height="9" rx="1" fill="currentColor" opacity=".55" transform="rotate(12 12.3 8.5)"/><rect x="5.3" y="2.5" width="5.4" height="10" rx="1" fill="currentColor"/></svg>';
@@ -431,7 +431,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 
 const LIVE=typeof window!=='undefined'&&!globalThis.SIM;
-const GAME='レギオン', VER='v0.3.3';
+const GAME='レギオン', VER='v0.4';
 let OPT={speed:'normal',diff:'normal',sound:true};
 try{const o=JSON.parse(localStorage.getItem('hk-opt')||'null'); if(o) OPT={...OPT,...o};}catch(e){}
 const saveOpt=()=>{try{localStorage.setItem('hk-opt',JSON.stringify(OPT))}catch(e){}};
@@ -454,7 +454,7 @@ function newGame(nats,leader,opp){
   const mk=(ns)=>shuffle(ns.flatMap(nat=>Array.from({length:10},(_,i)=>({id:++uid,nat,num:i+1}))));
   const cpuN=shuffle(Object.keys(NAT)).slice(0,3);
   const P=(name,nats,leader,cpu)=>({name,nats,leader,cpu,deck:mk(nats),hand:[],discard:[],won:[],taken:[],score:0,claims:0,revealed:null});
-  const landDeck=shuffle(LANDS.map((L,i)=>({...L,id:i,sides:[[],[]],imm:[false,false],forge:[0,0],curse:[false,false]})));
+  const landDeck=shuffle(LANDS.map((L,i)=>({...L,id:i,sides:[[],[]],imm:[false,false],forge:[0,0],curse:[false,false],flower:[false,false]})));
   G={p:[P('あなた',nats,leader,false),opp?{...P('相手',opp.nats,opp.leader,false),remote:true}:P('CPU',cpuN,cpuN[Math.random()*3|0],true)],
      lands:landDeck.splice(0,5),landDeck,stat:(typeof STATHOOK!=='undefined'?STATHOOK():null),cur:Math.random()<.5?0:1,log:[],over:false,turnNo:0};
   for(const p of G.p) for(let i=0;i<6;i++) p.hand.push(p.deck.pop());
@@ -466,7 +466,7 @@ function log(s){G.log.unshift(s); if(G.log.length>40) G.log.pop(); render();}
 function draw(pi,n){const P=G.p[pi];let k=0;for(let i=0;i<n;i++){if(!P.deck.length&&P.discard.length){P.deck=shuffle(P.discard.filter(c=>!c.joker));P.discard=P.discard.filter(c=>c.joker);log(`${P.name}：墓地を切り直して山札に戻す`);}if(!P.deck.length)break;P.hand.push(P.deck.pop());k++}return k}
 
 /* ---------- roles ---------- */
-const val=c=>c.mark?(c.num%10)+1:c.num;
+const val=c=>c.flower?c.fv:c.mark?(c.num%10)+1:c.num;
 function evalRole(cs,pi){
   if(cs.length<3) return null;
   const L=G.p[pi].leader, nj=cs.filter(c=>!c.joker), same=nj.length>0&&nj.every(c=>c.nat===nj[0].nat);
@@ -474,8 +474,8 @@ function evalRole(cs,pi){
   let best=null;
   for(const a of opts[0]) for(const b of opts[1]) for(const d of opts[2]){
     const v=[a,b,d].sort((x,y)=>x-y); let r=null;
-    if(v[0]===v[1]&&v[1]===v[2]) r={kind:'same',name:'同陣',pts:L==='dragon'?4:3};
-    else{const r1=v[1]-v[0]===1&&v[2]-v[1]===1, r2=L==='elf'&&v[1]-v[0]===2&&v[2]-v[1]===2;
+    if(v[0]===v[1]&&v[1]===v[2]) r={kind:'same',name:'同陣',pts:3};
+    else{const r1=v[1]-v[0]===1&&v[2]-v[1]===1, r2=false;
       if(r1||r2) r={kind:'run',name:(same?'一国':'')+(r2&&!r1?'森の列陣':'列陣'),pts:(same||(L==='human'&&new Set(nj.map(c=>c.nat)).size===nj.length))?2:1};}
     if(r&&(!best||r.pts>best.pts||(r.pts===best.pts&&Math.max(a,b,d)>Math.max(...best.vals)))){r.vals=v;r.jv=cs.map((c,i)=>c.joker?[a,b,d][i]:null).find(x=>x!=null);best=r;}
   }
@@ -485,7 +485,7 @@ function possible(cs,pi){ // can the side still become a role with one more card
   if(cs.length>=3) return false; if(cs.length<2) return true;
   for(let v=1;v<=10;v++) if(evalRole([...cs,{nat:(cs.find(c=>!c.joker)||cs[0]).nat,num:v}],pi)) return true; return false;
 }
-const movable=(l,s)=>!l.imm[s]&&G.p[s].leader!=='dwarf';
+const movable=(l,s)=>!l.imm[s]&&!(G.p[s].leader==='dwarf'&&l.sides[s].some(c=>c.nat==='dwarf'));
 const affect=(l,s)=>!l.imm[s];
 const alive=l=>G.lands.includes(l);
 
@@ -522,7 +522,7 @@ function placeScore(pi,c,l){
     if(c.num===10&&c.nat==='human') p*=new Set(s.map(x=>x.nat)).size===3?3:2; else if(c.num===10&&c.nat!=='dragon') p*=2;
     if(l.curse[pi]) p=Math.floor(p/2); return 20+p*2;}
   let v=s.length===2?(possible(s,pi)?4:-3):1.5;
-  v+=l.pts*.8+(l.ef?.6:0)+(l.bf?.5:0);
+  v+=l.pts*.8+(l.ef?.6:0)+(l.bf?.5:0)+(G.p[pi].leader==='elf'&&G.tree?(G.tree[pi][G.lands.indexOf(l)]||0)*.9:0);
   if(l.sides[1-pi].length===2) v+=1.2;
   if(l.forge[pi]&&s.length===2) v+=1+l.forge[pi]*.5;
   if(l.curse[pi]) v-=2;
@@ -538,6 +538,7 @@ async function turn(){
   const pi=G.cur, P=G.p[pi], O=G.p[1-pi];
   if(!P.hand.length||!G.lands.length) return endGame();
   G.turnNo++;
+  for(const l of G.lands) for(const c of l.sides[1-pi]) if(c.flower){ c.fv=1+(Math.random()*10|0); }
   for(const l of G.lands) if(l.forge[pi]&&l.forge[pi]<3&&l.sides[pi].length===2){l.forge[pi]++; log(`${P.name}：${l.nm}の鍛えが${l.forge[pi]}に`);}
   // fairy: the opponent of a fairy leader keeps one card revealed
   for(const [a,b] of [[0,1],[1,0]]) if(false){const h=G.p[b].hand; if(!h.some(c=>c.id===G.p[b].revealed)) G.p[b].revealed=h.length?h[Math.random()*h.length|0].id:null;}
@@ -556,6 +557,9 @@ async function turn(){
   if(G.over) return;
   if(P.leader==='fairy'&&G.lastPlaced&&G.lastPlaced.nat==='fairy'&&G.lands.length) await flowerMark(pi,'盟約',true);
   if(G.over) return;
+  if(P.leader==='demon'&&P.hand.some(c=>!c.joker)){
+    const d=await chooseCard(pi,'魔族の盟約：墓地に送る手札（送らないならスキップ）',P.hand.filter(c=>!c.joker),x=>1.5-cardValue(pi,x),true);
+    if(d&&!(P.cpu&&(P.hand.length<5||cardValue(pi,d)>1.2))){ P.hand=P.hand.filter(c=>c.id!==d.id); P.discard.push(d); if(G.stat) G.stat.ev('demon_disc'); log(`${P.name}：魔族の盟約で${cname(d)}を墓地へ`); } }
   if(!swapped) draw(pi,1);
   const empty=p=>!p.hand.length&&!p.deck.length&&!p.discard.length;
   if(!G.lands.length||G.turnNo>=200||G.p.some(empty)) return endGame();
@@ -580,6 +584,7 @@ function aiPlace(pi){
   const P=G.p[pi]; let best=null,bs=-1e9;
   for(const c of P.hand){ if(c.joker) continue; for(const l of G.lands){const s=placeScore(pi,c,l); if(s>bs){bs=s;best={card:c,land:l}}}}
   const jm=mercMove(pi); if(jm&&(jm.score>bs||!best)){bs=jm.score;best={card:jm.card,land:jm.land};}
+  if(!best){ const J=P.hand.find(c=>c.joker), L=G.lands.find(l=>l.sides[pi].length<3); if(J&&L) best={card:J,land:L}; }
   for(const l of G.lands){const s=l.sides[pi]; if(!s.length||possible(s,pi)) continue;
     if(OPT.diff==='easy') break;
     for(const c of P.hand){ if(c.joker) continue; const ns=[...s.slice(0,-1),c]; if(possible(ns,pi)){const v=3.5+l.pts+Math.random(); if(v>bs){bs=v;best={card:c,land:l,swap:true}}}}}
@@ -596,13 +601,12 @@ async function tide(pi){
   for(;;){ a=await chooseLand(pi,'潮流：動かす自分のカードがある土地',src,null,true); if(!a) return;
     b=await chooseLand(pi,'潮流：移す先の土地',G.lands.filter(l=>l!==a&&l.sides[pi].length<3),null,false,true); if(b===BACK) continue; if(!b) return; break; }
   const c=a.sides[pi].pop(); b.sides[pi].push(c); log(`${G.p[pi].name}：潮流で${cname(c)}を${b.nm}へ`);
-  if(b.sides[pi].length===3) draw(pi,1);
   await resolveSide(b,pi);
 }
 async function aiTide(pi){
   for(const a of G.lands){const t=a.sides[pi]; if(!t.length) continue; const c=t[t.length-1];
     for(const b of G.lands){ if(b===a||b.sides[pi].length!==2) continue;
-      if(evalRole([...b.sides[pi],c],pi)){t.pop(); b.sides[pi].push(c); log(`CPU：潮流で${cname(c)}を${b.nm}へ`); draw(pi,1); await resolveSide(b,pi); return;}}}
+      if(evalRole([...b.sides[pi],c],pi)){t.pop(); b.sides[pi].push(c); log(`CPU：潮流で${cname(c)}を${b.nm}へ`); await resolveSide(b,pi); return;}}}
   let best=null,bs=2;
   for(const a of G.lands){const t=a.sides[pi]; if(!t.length) continue; const c=t[t.length-1];
     const loss=t.length===2&&possible(t,pi)?compCount(t,pi)-compCount(t.slice(0,-1),pi)*0+2:(possible(t,pi)?0:-2);
@@ -614,7 +618,7 @@ async function aiTide(pi){
 async function playCard(pi,card,land){
   const P=G.p[pi]; P.hand=P.hand.filter(c=>c.id!==card.id);
   const side=land.sides[pi], under=side[side.length-1];
-  card.mark=0; card.wild=(card.nat==='dragon'&&card.num===9); G.lastPlaced=card;
+  card.mark=0; card.flower=0; card.wild=(card.nat==='dragon'&&card.num===9); G.lastPlaced=card;
   const jc=card.joker?side.length:0;
   side.push(card);
   if(jc){ P.score-=jc; log(`${P.name}：傭兵団に雇用料${jc}点を払う`); } log(`${P.name}：${cname(card)}を${land.nm}に置く`);
@@ -640,17 +644,20 @@ async function claim(land,si,role){
     if(t.num===2&&!(t.nat==='dwarf')) bonus+=1;
     if(t.num===10){ if(t.nat==='human') mult=Math.max(mult,new Set(cs.map(x=>x.nat)).size===3?3:2); else if(t.nat!=='dragon') mult=Math.max(mult,2); }
   }
-  if(P.leader==='demon'&&P.discard.length>=8) bonus+=1;
+
   const lb=land.bf?land.bf(role,s,land,si):0; bonus+=lb;
   const fg=land.forge[si]; bonus+=fg;
+  const slot=G.lands.indexOf(land); G.tree=G.tree||[[0,0,0,0,0],[0,0,0,0,0]];
+  const tb=P.leader==='elf'?G.tree[si][slot]||0:0; bonus+=tb; if(G.stat&&tb) G.stat.ev('elf_tree',tb);
   let pts=(role.pts+bonus+land.pts)*mult;
-  const cursed=land.curse[si]; if(cursed) pts=G.p[o].leader==='demon'?0:Math.floor(pts/2);
+  const cursed=land.curse[si]; if(cursed){ pts=0; if(G.stat) G.stat.ev('curse_hit'); }
   P.score+=pts; P.claims++; P.taken.push({land,cards:cs,pts}); G.stat&&G.stat.claim(si,pts,cs);
   netEmit({t:'claim',landId:land.id,pts}); if(LIVE) await flyLand(land,si,pts);
   for(const c of land.sides[o]){c.mark=0;c.wild=false;}
   const turn=land.sides[o].filter(c=>c.joker); if(turn.length){ P.hand.push(...turn); log(`${G.p[o].name}の傭兵団が${P.name}に寝返った`); }
   G.p[o].discard.push(...land.sides[o].filter(c=>!c.joker));
   for(const c of s){c.mark=0;c.wild=false;} P.won.push(...s);
+  if(P.leader==='elf') G.tree[si][slot]=(G.tree[si][slot]||0)+1; G.tree[o][slot]=0;
   const i=G.lands.indexOf(land);
   let nl=null;
   if(land.ef==='watch'&&G.landDeck.length>1){
@@ -660,7 +667,18 @@ async function claim(land,si,role){
     log(`${land.nm}の効果：${P.name}が次の土地に${nl.nm}を選ぶ`);
   } else nl=G.landDeck.pop();
   if(nl) G.lands[i]=nl; else G.lands.splice(i,1);
-  log(`★ ${P.name}が${land.nm}を攻略：${role.name} ${pts}点${lb?`（${land.b}）`:''}${fg?`（鍛え+${fg}）`:''}${mult>2?'（同盟の王で3倍）':mult>1?'（王で2倍）':''}${cursed?'（呪いで半分）':''}`);
+  log(`★ ${P.name}が${land.nm}を攻略：${role.name} ${pts}点${lb?`（${land.b}）`:''}${fg?`（鍛え+${fg}）`:''}${tb?`（木+${tb}）`:''}${mult>2?'（同盟の王で3倍）':mult>1?'（王で2倍）':''}${cursed?'（呪いで0点）':''}`);
+  if(P.leader==='mermaid'){ const opts=cs.filter(c=>!c.joker);
+    const r=await chooseCard(si,'人魚の盟約：山札に戻す凱旋のカード（戻さないならスキップ）',opts,x=>(x.num%2?(ABV[x.num]||0):x.num>=8?2.5:1)+x.num/10,true);
+    if(r){ P.won=P.won.filter(x=>x.id!==r.id); P.deck.push(r); shuffle(P.deck); if(G.stat) G.stat.ev('mer_return'); log(`人魚の盟約：${cname(r)}を山札に戻す`); } }
+  if(P.leader==='dragon'){ const pool=G.p[o].hand.filter(c=>!c.joker); if(pool.length){ const t=pool[Math.random()*pool.length|0];
+      await vanish([t],'竜の盟約：相手の手札を1枚焼く','burn'); G.p[o].hand=G.p[o].hand.filter(c=>c!==t); G.p[o].discard.push(t); if(G.stat) G.stat.ev('dragon_burn'); log(`竜の盟約：${G.p[o].name}の${cname(t)}を焼く`);} }
+  if(P.leader==='demon'){ const pool=P.discard.filter(c=>!c.joker), okL=G.lands.filter(l=>l.sides[si].length<3);
+    if(pool.length&&okL.length){ let x,l2;
+      for(;;){ x=await chooseCard(si,'魔族の盟約：墓地から置くカード（置かないならスキップ）',pool,y=>Math.max(...okL.map(k=>placeScore(si,y,k))),true); if(!x) break;
+        if(P.cpu&&Math.max(...okL.map(k=>placeScore(si,x,k)))<2.5){x=null;break;}
+        l2=await chooseLand(si,'魔族の盟約：置く土地',okL.filter(k=>alive(k)),k=>placeScore(si,x,k),false,true); if(l2===BACK) continue; break; }
+      if(x&&l2){ P.discard=P.discard.filter(y=>y.id!==x.id); x.mark=0; x.wild=(x.nat==='dragon'&&x.num===9); l2.sides[si].push(x); if(G.stat) G.stat.ev('demon_place'); log(`魔族の盟約：墓地の${cname(x)}を${l2.nm}に置く`); await resolveSide(l2,si); } } }
   if(land.ef==='search'){const look=P.deck.slice(-5);
     const c=await chooseCard(si,'港町：山札の上5枚から手札に加えるカード',look,x=>cardValue(si,x),false);
     if(c){P.deck=P.deck.filter(x=>x.id!==c.id); P.hand.push(c); shuffle(P.deck); log(`${land.nm}の効果：${P.name}は山札から1枚手札に加え、山札を切る`);}}
@@ -701,14 +719,28 @@ async function placeExtra(pi,cands,label,noAbility){
 const ABV={1:1,3:2.2,5:2,7:1.6,9:3};
 function compCount(cs,pi){ if(cs.length!==2) return cs.length<2?5:0; let k=0; for(let v=1;v<=10;v++) if(evalRole([...cs,{nat:cs[0].nat,num:v}],pi)) k++; return k; }
 async function flowerMark(pi,tag,optional){
-  const cands=[]; for(const l of G.lands) for(const s of [0,1]){const side=l.sides[s]; if(side.length&&!side[side.length-1].mark) cands.push({l,s,c:side[side.length-1]});}
+  const o=1-pi, cands=[]; for(const l of G.lands) for(const c of l.sides[o]) if(!c.flower&&!c.joker) cands.push({l,c,s:o});
   if(!cands.length) return;
-  const score=x=>{const side=x.l.sides[x.s]; const b=compCount(side,x.s); x.c.mark=1; const a=compCount(side,x.s); x.c.mark=0;
-    return x.s===pi?(a-b)*1.5:(b-a)*1.5+(side.length===2?1:0)+.5;};
-  const pick=await chooseCard(pi,'花の印：印を付けるカード（場の一番上）',cands.map(x=>({...x.c,_x:x})),y=>score(y._x),true);
-  if(!pick||(optional&&G.p[pi].cpu&&score(pick._x)<.8)) return log(`${tag}：印を付けない`);
-  pick._x.c.mark=1; log(`${tag}：${pick._x.l.nm}の${cname(pick._x.c)}に花の印（${val(pick._x.c)}として扱う）`);
-  if(G.stat) G.stat.ev('fairy_mark');
+  const sc0=x=>{const a=x.l.sides[o]; return (a.length===2&&possible(a,o)?4:a.length===2?1:.5)+x.l.pts*.3;};
+  const pick=await chooseCard(pi,'花の印：印を付ける相手のカード',cands.map(x=>({...x.c,_x:x})),y=>sc0(y._x),!!optional);
+  if(!pick) return log(`${tag}：印を付けない`);
+  const c=pick._x.c; c.flower=1; c.fv=c.num; if(G.stat) G.stat.ev('fairy_mark'); log(`${tag}：${pick._x.l.nm}の${cname(c)}に花の印`);
+}
+function sideVal(side,s){ if(side.length===3) return evalRole(side,s)?20:-6; if(side.length===2) return possible(side,s)?compCount(side,s)*.8:-2; return side.length?1:0; }
+async function fairySwap(pi){
+  const o=1-pi, opp=G.lands.filter(l=>{const a=l.sides[o]; return a.length&&a[a.length-1].flower&&movable(l,o);});
+  const mine=[]; for(const l of G.lands) l.sides[pi].forEach((c,k)=>{ if(!c.joker) mine.push({l,k,c}); });
+  if(!opp.length||!mine.length) return;
+  const gain=(A,m)=>{ const t=A.sides[o][A.sides[o].length-1]; const myB=m.l.sides[pi].slice(); myB[m.k]=t; const opA=A.sides[o].slice(0,-1).concat([m.c]);
+    return (sideVal(myB,pi)-sideVal(m.l.sides[pi],pi))+(sideVal(A.sides[o],o)-sideVal(opA,o))+(m.l===A?-1:0); };
+  let A,m;
+  for(;;){ const t=await chooseCard(pi,'花の印：入れ替える相手のカード（印付き・やめるならスキップ）',opp.map(l=>({...l.sides[o][l.sides[o].length-1],_x:{l,s:o}})),y=>Math.max(...mine.map(z=>gain(y._x.l,z))),true);
+    if(!t) return; A=t._x.l; const best=Math.max(...mine.map(z=>gain(A,z))); if(G.p[pi].cpu&&best<1.5) return;
+    const p=await chooseCard(pi,'花の印：代わりに渡す自分のカード（場のどこでも）',mine.map(z=>({...z.c,_x:{l:z.l,s:pi,z}})),y=>gain(A,y._x.z),false,true);
+    if(p===BACK) continue; if(!p) return; m=p._x.z; break; }
+  const t=A.sides[o].pop(); t.flower=0; m.l.sides[pi][m.k]=t; A.sides[o].push(m.c); if(G.stat) G.stat.ev('fairy_swap');
+  log(`花の印：${A.nm}の${cname(t)}と、${m.l.nm}の${cname(m.c)}を入れ替える`);
+  await resolveSide(m.l,pi); await resolveSide(A,o);
 }
 
 /* show which cards an effect removes before they disappear */
@@ -733,7 +765,7 @@ async function onEnter(pi,c,land){
   const P=G.p[pi], o=1-pi, O=G.p[o], n=c.num, nat=c.nat, here=alive(land);
   const tag=`${cname(c)}の出陣効果`;
   if(n===1){
-    if(nat==='fairy') return flowerMark(pi,tag,false);
+    if(nat==='fairy'){ draw(pi,1); log(`${tag}：1枚引く`); return flowerMark(pi,tag,false); }
     if(nat==='beast'){ if(!here||!land.sides[pi].some(x=>x!==c&&x.nat==='beast')) return log(`${tag}：群れがいない`);
       log(tag+'：群れ呼び'); if(G.stat) G.stat.ev('beast_pack'); return placeExtra(pi,[land],'群れ呼び');}
     if(nat==='demon'){
@@ -743,19 +775,27 @@ async function onEnter(pi,c,land){
       if(!pick||(P.cpu&&score(pick._x)<1.2)) return log(`${tag}：生贄なし`);
       const {l,c:t}=pick._x; l.sides[pi].pop(); t.mark=0; t.wild=false; P.discard.push(t); log(`${tag}：${cname(t)}を生贄に`);
       if(G.stat) G.stat.ev('demon_sac');
-      if(t.num%2) await onEnter(pi,t,l); return;}
+      if(t.num%2) await onEnter(pi,t,l); draw(pi,1); log(`${tag}：1枚引く`); return;}
     draw(pi,1); return log(`${tag}：1枚引く`);
   }
   if(n===3){
-    if(nat==='elf'){ const look=P.deck.slice(-3); if(!look.length) return log(`${tag}：山札がない`);
-      const pk=await chooseCard(pi,'先読み：手札に加えるカード',look,x=>cardValue(pi,x),false);
-      P.deck=P.deck.filter(x=>x.id!==pk.id); P.hand.push(pk); return log(`${tag}：山札の上3枚から1枚を手札に`);}
+    if(nat==='elf'){
+      const cands=[]; for(const l of G.lands) for(const sd of [pi,o]){ const a=l.sides[sd]; if(!a.length) continue; if(sd===o&&!movable(l,o)) continue; cands.push({l,s:sd,c:a[a.length-1]}); }
+      if(!cands.length) return log(`${tag}：対象なし`);
+      const own=x=>{ const rest=x.l.sides[pi].slice(0,-1); let best=-3; for(const d of G.lands){ if(d===x.l||d.sides[pi].length>=3) continue; const ns=[...d.sides[pi],x.c]; const v=ns.length===3?(evalRole(ns,pi)?12+d.pts:-6):possible(ns,pi)?ns.length:-2; if(v>best) best=v; } return best+(!possible(x.l.sides[pi],pi)?2:0)-(x.l.sides[pi].length===2&&possible(x.l.sides[pi],pi)?4:0); };
+      let pick,b;
+      for(;;){ pick=await chooseCard(pi,'疾風：動かすカード（自分か相手の一番上）',cands.map(x=>({...x.c,_x:x})),y=>y._x.s===o?threat(y._x.l,o):own(y._x),true); if(!pick) return log(`${tag}：動かさない`);
+        const {l:a,s:sd,c:top}=pick._x;
+        const dst=G.lands.filter(l=>l!==a&&l.sides[sd].length<3);
+        b=await chooseLand(pi,'疾風：移す先の土地',dst,x=>{const ns=[...x.sides[sd],top]; if(sd===o){ if(ns.length===3) return evalRole(ns,o)?-50:6; return possible(ns,o)?-ns.length:2;} return ns.length===3?(evalRole(ns,pi)?50+x.pts:-6):possible(ns,pi)?ns.length*2:-2;},false,true); if(b===BACK) continue; if(!b) return; break; }
+      const {l:a,s:sd,c:top}=pick._x; a.sides[sd].pop(); b.sides[sd].push(top); if(G.stat) G.stat.ev(sd===pi?'elf3_own':'elf3_opp');
+      log(`${tag}：${cname(top)}を${a.nm}から${b.nm}へ`); await resolveSide(b,sd); return;}
     if(nat==='mermaid'){
-      const ls=G.lands.filter(l=>l.sides[pi].length&&l.sides[o].length&&movable(l,o));
-      const l=await chooseLand(pi,'人魚の斥候：一番上を入れ替える土地',ls,x=>threat(x,o),true); if(!l) return log(`${tag}：対象なし`);
-      const a=l.sides[pi].pop(), b=l.sides[o].pop(); l.sides[pi].push(b); l.sides[o].push(a);
-      log(`${tag}：${l.nm}で${cname(a)}と${cname(b)}を入れ替え`);
-      await resolveSide(l,pi); await resolveSide(l,o); return;}
+      const ls=G.lands.filter(l=>l.sides[o].length&&movable(l,o));
+      const l=await chooseLand(pi,'引き潮：相手の一番上を山札に戻す土地',ls,x=>threat(x,o)+1,true); if(!l) return log(`${tag}：対象なし`);
+      const t=l.sides[o][l.sides[o].length-1]; await vanish([t],`引き潮：${l.nm}から相手の山札の上へ`,'back');
+      l.sides[o].pop(); t.mark=0; t.wild=false; if(t.joker) O.hand.push(t); else O.deck.push(t); if(G.stat) G.stat.ev('mer3');
+      return log(`${tag}：${cname(t)}を相手の山札の一番上へ`);}
     const src=G.lands.filter(l=>l.sides[o].length&&movable(l,o));
     let a,b,top;
     for(;;){ a=await chooseLand(pi,'斥候：動かす相手のカードがある土地',src,x=>threat(x,o),true); if(!a) return log(`${tag}：対象なし`);
@@ -774,11 +814,13 @@ async function onEnter(pi,c,land){
   }
   if(n===7){
     if(nat==='mermaid'){
-      const cands=[]; for(const l of G.lands){const side=l.sides[pi]; const t=side[side.length-1]; if(t&&t!==c) cands.push({l,c:t});}
-      const score=x=>(!possible(x.l.sides[pi],pi)?4:0)+(x.c.num%2?(ABV[x.c.num]||0):0)-(x.l.sides[pi].length===2&&possible(x.l.sides[pi],pi)?3:0)-(x.l.forge[pi]?2:0);
-      const pick=await chooseCard(pi,'還流：手札に戻す自分のカード',cands.map(x=>({...x.c,_x:x})),y=>score(y._x),true);
-      if(!pick||(P.cpu&&score(pick._x)<1.5)) return log(`${tag}：戻さない`);
-      const {l,c:t}=pick._x; l.sides[pi].pop(); t.mark=0; t.wild=false; P.hand.push(t); if(G.stat) G.stat.ev('mermaid_return'); return log(`${tag}：${cname(t)}を手札に戻す`);}
+      const pool=P.discard.filter(x=>!x.joker), okL=G.lands.filter(l=>l.sides[pi].length<3);
+      if(!pool.length||!okL.length) return log(`${tag}：対象なし`);
+      let x,l;
+      for(;;){ x=await chooseCard(pi,'満ち潮：墓地から置くカード',pool,y=>Math.max(...okL.map(k=>placeScore(pi,y,k))),true); if(!x) return log(`${tag}：置かない`);
+        l=await chooseLand(pi,'満ち潮：置く土地',okL.filter(k=>alive(k)),k=>placeScore(pi,x,k),false,true); if(l===BACK) continue; if(!l) return; break; }
+      P.discard=P.discard.filter(y=>y.id!==x.id); x.mark=0; x.wild=(x.nat==='dragon'&&x.num===9); l.sides[pi].push(x); if(G.stat) G.stat.ev('mer7');
+      log(`${tag}：墓地の${cname(x)}を${l.nm}に置く`); await resolveSide(l,pi); return;}
     if(nat==='demon'){
       const ls=G.lands.filter(l=>!l.curse[o]);
       const l=await chooseLand(pi,'呪縛：呪いを置く相手の土地',ls,x=>threat(x,o)+x.pts,false); if(!l) return log(`${tag}：対象なし`);
@@ -805,7 +847,14 @@ async function onComplete(pi,c,cs){
     const pk=await chooseCard(pi,'調達：山札から手札に加えるカード',P.deck,x=>cardValue(pi,x),false);
     P.deck=P.deck.filter(x=>x.id!==pk.id); P.hand.push(pk); shuffle(P.deck); if(G.stat) G.stat.ev('ev4',1); return log(`${tag}：山札から1枚を手札に`);}
   if(n===6){
-    if(nat==='elf'){ log(tag+'：芽吹き'); if(G.stat) G.stat.ev('elf_sprout'); await placeExtra(pi,G.lands,'芽吹き',true); return; }
+    if(nat==='elf'){ const n=G.lands.length; if(n<2) return log(`${tag}：対象なし`);
+      const pair=l=>{const k=G.lands.indexOf(l); return [l,G.lands[k+1]];};
+      const ls=G.lands.slice(0,n-1).filter(l=>pair(l).some(x=>x.sides[o].length&&affect(x,o)));
+      const l=await chooseLand(pi,'森の挟撃：左側の土地を選ぶ（右隣とあわせて2か所）',ls,x=>pair(x).reduce((a,y)=>a+(affect(y,o)?threat(y,o)+y.sides[o].length*2:0),0),true); if(!l) return log(`${tag}：対象なし`);
+      const tg=pair(l).filter(x=>affect(x,o)); const gone=tg.flatMap(x=>x.sides[o]);
+      await vanish(gone,`森の挟撃：${tg.map(x=>x.nm).join('と')}の相手側を墓地へ`,'burn');
+      for(const x of tg){ for(const b of x.sides[o]){b.mark=0;b.wild=false; if(b.joker) O.hand.push(b); else O.discard.push(b);} x.sides[o]=[]; }
+      if(G.stat) G.stat.ev('elf6',gone.length); return log(`${tag}：${tg.map(x=>x.nm).join('と')}の相手側${gone.length}枚を墓地へ`); }
     const ls=G.lands.filter(l=>l.sides[o].length&&affect(l,o));
     const l=await chooseLand(pi,'殲滅：相手側をすべて墓地に送る土地',ls,x=>threat(x,o)+x.sides[o].length*2,true); if(!l) return log(`${tag}：対象なし`);
     await vanish(l.sides[o],`殲滅：${l.nm}の${O.name==='あなた'?'あなた':'相手'}側を墓地へ`,'burn');
@@ -813,11 +862,7 @@ async function onComplete(pi,c,cs){
     if(G.stat) G.stat.ev('ev6',gone.length); return log(`${tag}：${l.nm}の相手側${gone.length}枚を墓地へ`);
   }
   if(n===8){
-    if(nat==='fairy'){ let k=0;
-      await vanish(G.lands.filter(l=>movable(l,o)).flatMap(l=>l.sides[o].filter(x=>x.mark)),'妖精のいたずら：印のカードを手札へ','back');
-      for(const l of G.lands){ if(!movable(l,o)) continue; const keep=l.sides[o].filter(x=>!x.mark), back=l.sides[o].filter(x=>x.mark);
-        for(const b of back){b.mark=0; O.hand.push(b); k++;} l.sides[o]=keep; }
-      if(G.stat&&k) G.stat.ev('fairy_bounce',k); return log(`${tag}：印の付いた${k}枚を相手の手札に押し返す`);}
+    if(nat==='fairy'){ await flowerMark(pi,tag,false); await flowerMark(pi,tag,false); return; }
     if(!O.hand.length) return log(`${tag}：相手の手札がない`);
     const pool=O.hand.filter(x=>!x.joker); if(!pool.length) return log(`${tag}：対象なし`);
     const t=await chooseCard(pi,'看破：数字を選ぶ（その数字のカードをすべて墓地へ）',pool,x=>pool.filter(y=>y.num===x.num).reduce((a,y)=>a+cardValue(o,y)+1,0),false);
@@ -927,7 +972,7 @@ function netOnHost(m){
   if(m.t==='ans'&&NET.pending){ const p=NET.pending; NET.pending=null; p.res(m.v); }
   if(m.t==='bye'){ netLost(); }
 }
-const sc=c=>({id:c.id,nat:c.nat,num:c.num,mark:c.mark||0,wild:!!c.wild,joker:!!c.joker});
+const sc=c=>({id:c.id,nat:c.nat,num:c.num,mark:c.mark||0,wild:!!c.wild,joker:!!c.joker,flower:c.flower||0,fv:c.fv||0});
 const sl=l=>({id:l.id,nm:l.nm,pts:l.pts,b:l.b,e:l.e,sh:l.sh});
 function viewFor(pi){
   const o=1-pi, sw=a=>[a[pi],a[o]];
@@ -936,7 +981,7 @@ function viewFor(pi){
     discard:P.discard.map(sc),won:[],taken:P.taken.map(t=>({land:sl(t.land),cards:t.cards.map(sc),pts:t.pts}))});
   return {p:[pl(G.p[pi],false),pl(G.p[o],true)],
     lands:G.lands.map(l=>({...sl(l),ef:l.ef,sides:[l.sides[pi].map(sc),l.sides[o].map(sc)],forge:sw(l.forge),curse:sw(l.curse),imm:sw(l.imm)})),
-    landDeck:G.landDeck.length,cur:G.cur===pi?0:1,turnNo:G.turnNo,over:G.over,
+    landDeck:G.landDeck.length,tree:G.tree?[G.tree[pi],G.tree[o]]:null,cur:G.cur===pi?0:1,turnNo:G.turnNo,over:G.over,
     log:G.log.map(s=>s.replace(/あなた|相手/g,x=>x==='あなた'?'相手':'あなた'))};
 }
 function netPush(){ if(NET.role!=='host'||!NET.conn||!G) return; clearTimeout(NET.qt); NET.qt=setTimeout(()=>netSend({t:'state',v:viewFor(1)}),0); }
@@ -968,7 +1013,7 @@ async function remoteAsk(pi,req){
 function restoreView(v){
   const lands=v.lands.map(l=>({...l,bf:LANDS[l.id]&&LANDS[l.id].bf}));
   const fix=p=>({...p,taken:p.taken.map(t=>({...t,land:{...t.land,bf:LANDS[t.land.id]&&LANDS[t.land.id].bf}}))});
-  return {p:v.p.map(fix),lands,landDeck:Array(v.landDeck).fill(0),cur:v.cur,turnNo:v.turnNo,over:v.over,log:v.log,remoteView:true};
+  return {p:v.p.map(fix),lands,landDeck:Array(v.landDeck).fill(0),tree:v.tree,cur:v.cur,turnNo:v.turnNo,over:v.over,log:v.log,remoteView:true};
 }
 function netOnGuest(m){
   if(m.t==='state'){ G=restoreView(m.v);
@@ -1012,7 +1057,7 @@ async function flyLand(land,si,pts){
 function chip(nat,leader){return emb(nat,leader)}
 const isSp=c=>!!(SWAP[c.nat]&&SWAP[c.nat][c.num]);
 const isJ=c=>!!c.joker;
-function mini(c,top,glow){return `<div class="mc ${top?'tp':'dim'} ${isSp(c)?'sp':''} ${isJ(c)?'mj':''} ${glow?'glow':''}" style="${cv(c.nat)}" data-info="${c.id}"><span class="th" style="background-image:url(${cimg(c)})"></span><span class="n">${c.joker?'★':c.wild?'竜':val(c)}</span><span class="r">${c.mark?'<b class="mk">✿</b>':''}${rname(c)}</span></div>`}
+function mini(c,top,glow){return `<div class="mc ${top?'tp':'dim'} ${isSp(c)?'sp':''} ${isJ(c)?'mj':''} ${glow?'glow':''}" style="${cv(c.nat)}" data-info="${c.id}"><span class="th" style="background-image:url(${cimg(c)})"></span><span class="n">${c.joker?'★':c.wild?'竜':val(c)}</span><span class="r">${c.mark||c.flower?'<b class="mk">✿</b>':''}${rname(c)}</span></div>`}
 function findCard(id){
   for(const p of G.p) for(const k of ['hand','discard','deck','won']){const c=p[k].find(x=>x.id===id); if(c) return c;}
   for(const l of G.lands) for(const s of l.sides){const c=s.find(x=>x.id===id); if(c) return c;}
@@ -1043,9 +1088,9 @@ function predict(pi,c,l){
   const cc=(c.nat==='dragon'&&c.num===9)?{...c,wild:true,mark:0}:{...c,mark:0}; const s=[...side,cc]; const r=evalRole(s,pi); if(!r) return false;
   const P=G.p[pi]; let bonus=0,mult=1; const trig=[cc]; if(cc.nat==='dwarf'&&cc.num===2) for(const x of side) if(x.num%2===0) trig.push(x);
   for(const t of trig){ if(t.num===2&&t.nat!=='dwarf') bonus+=1; if(t.num===10){ if(t.nat==='human') mult=Math.max(mult,new Set(s.map(x=>x.nat)).size===3?3:2); else if(t.nat!=='dragon') mult=Math.max(mult,2);} }
-  if(P.leader==='demon'&&P.discard.length>=8) bonus+=1;
-  bonus+=(l.bf?l.bf(r,s,l,pi):0)+l.forge[pi];
-  let pts=(r.pts+bonus+l.pts)*mult; if(l.curse[pi]) pts=G.p[1-pi].leader==='demon'?0:Math.floor(pts/2);
+
+  bonus+=(l.bf?l.bf(r,s,l,pi):0)+l.forge[pi]+(P.leader==='elf'&&G.tree?G.tree[pi][G.lands.indexOf(l)]||0:0);
+  let pts=(r.pts+bonus+l.pts)*mult; if(l.curse[pi]) pts=0;
   return {pts,name:r.name};
 }
 function panel(P,pi,turn){
@@ -1076,10 +1121,11 @@ function render(){
   let h=`<div class="top"><h1>${GAME}<span class="ver">${VER}</span></h1><div class="row opts"><button id="spdBtn" title="CPUと演出の速さ">速さ：${SPN[OPT.speed]}</button><button id="sndBtn">${OPT.sound?'音：オン':'音：オフ'}</button><button id="rulesBtn">ルール</button><button id="quitBtn">${NET.role?'退出':'やり直す'}</button></div></div>${NET.role?`<div class="netbar">オンライン対戦中　合言葉 <b>${NET.code}</b></div>`:''}`;
   h+=panel(cpu,1,G.cur===1);
   h+=`<div class="board" style="grid-template-columns:repeat(${Math.max(n,1)},minmax(0,1fr))">`;
+  const TR=G.tree||[[0,0,0,0,0],[0,0,0,0,0]];
   G.lands.forEach((l,i)=>{
     const cand=req&&((req.type==='land'&&req.cands.includes(l))||(placing&&ui.sel&&(ui.swap?l.sides[0].length>0:l.sides[0].length<3)));
     const o=l.sides[1], m=l.sides[0], glow=ui.glow===l.id;
-    const stt=[l.forge[1]?`<span class="fg">相手 鍛え${l.forge[1]}</span>`:'',l.curse[1]?'<span class="cu">相手 呪い</span>':'',l.forge[0]?`<span class="fg">自分 鍛え${l.forge[0]}</span>`:'',l.curse[0]?'<span class="cu">自分 呪い</span>':''].join('');
+    const stt=[l.forge[1]?`<span class="fg">相手 鍛え${l.forge[1]}</span>`:'',l.curse[1]?'<span class="cu">相手 呪い</span>':'',l.forge[0]?`<span class="fg">自分 鍛え${l.forge[0]}</span>`:'',l.curse[0]?'<span class="cu">自分 呪い</span>':'',G.p[1].leader==='elf'&&TR[1][i]?`<span class="tr">相手 木+${TR[1][i]}</span>`:'',G.p[0].leader==='elf'&&TR[0][i]?`<span class="tr">自分 木+${TR[0][i]}</span>`:''].join('');
     const nd=needs(l,0);
     let pr='';
     if(placing&&ui.sel&&!ui.swap&&m.length===2){const p=predict(0,ui.sel,l); pr=p?`<span class="pred">+${p.pts}${ui.sel.joker?'<small> 雇用料2</small>':''}</span>`:p===false?'<span class="pred bad">陣形にならない</span>':'';}
@@ -1159,7 +1205,7 @@ function renderRules(){
   <p>お互い、最初の手札に<b>謎の傭兵団</b>を1枚持って始める（デッキ30枚＋1枚）。好きな数字・好きな国として使える。置く時、その土地の自分側にすでにある枚数だけ<b>雇用料</b>を払う（1枚目0点・2枚目1点・3枚目2点）。傭兵団が乗った土地を相手に攻略されたら、傭兵団は相手の手札に<b>寝返る</b>。</p>
   <h3>国と盟約</h3>
   <p>3か国でデッキ（30枚）を組み、1つを盟主にする。盟主の国の<b>盟約</b>だけが有効。</p>
-  <p class="muted">特別な状態：<b>鍛え</b>（ドワーフ・溜めるほど得点+）／<b>花の印</b>（フェアリー・数字+1）／<b>呪い</b>（魔族・攻略時の得点半分）／<b>竜化</b>（ドラゴニュート9・7〜10として扱う）</p>
+  <p class="muted">特別な状態：<b>鍛え</b>（ドワーフ・溜めるほど得点+）／<b>花の印</b>（フェアリー：印の付いたカードの数字は、印を付けた側のターンが来るたび1〜10のどれかにランダムに変わる）／<b>呪い</b>（魔族・攻略時の得点0）／<b>竜化</b>（ドラゴニュート9・7〜10として扱う）</p>
   <h3>終わり</h3>
   <p>場には常に土地5枚。攻略されたら山から補充し、12枚すべて攻略されたら終了。得点の多い方の勝ち。</p>
   <button id="rulesClose">閉じる</button></div></div>`;
