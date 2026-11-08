@@ -342,6 +342,11 @@ h1{white-space:nowrap}
 .vban .vc b{position:absolute;left:2px;top:2px;min-width:1.4em;text-align:center;border-radius:999px;font-family:var(--f-num);font-size:.7rem;color:#fff;background:var(--c3)}
 @keyframes vbin{0%{opacity:0;transform:translate(-50%,-40%) scale(.9)}12%{opacity:1;transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.van{animation:none;opacity:.6}}
+.plog{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.plog .pt3{font-size:.68rem;color:var(--gold);font-weight:700;letter-spacing:.05em}
+.plog .pl{font-size:.78rem;line-height:1.35;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plog .pl.new{color:var(--ink);font-weight:500;animation:plin .3s ease-out}
+@keyframes plin{from{opacity:0;transform:translateY(4px)}}
 @media (prefers-reduced-motion:reduce){.hc.sel,.nat:hover{transform:none}}
 </style>
 
@@ -426,7 +431,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 
 const LIVE=typeof window!=='undefined'&&!globalThis.SIM;
-const GAME='レギオン', VER='v0.3.2';
+const GAME='レギオン', VER='v0.3.3';
 let OPT={speed:'normal',diff:'normal',sound:true};
 try{const o=JSON.parse(localStorage.getItem('hk-opt')||'null'); if(o) OPT={...OPT,...o};}catch(e){}
 const saveOpt=()=>{try{localStorage.setItem('hk-opt',JSON.stringify(OPT))}catch(e){}};
@@ -1092,7 +1097,7 @@ function render(){
   else if(placing) pr=ui.swap?(ui.sel?'入れ替える自分の土地を選ぶ':'入れ替え：手札から出すカードを選ぶ'):(ui.sel?'置く土地を選ぶ（ドラッグでも置けます）':'手札から置くカードを選ぶ（ドラッグでも置けます）');
   else if(req&&(req.type==='land'||req.type==='card')) pr=req.prompt;
   h+=panel(me,0,G.cur===0);
-  h+=`<div class="dock"><div class="prompt ${wt?'wait':''}" aria-live="polite"><span>${esc(pr)}</span><span class="row">${placing?`<button id="swapBtn">${ui.swap?'置くに戻す':'入れ替え'}</button>`:''}${placing&&req.tide?'<button id="tideBtn">潮流</button>':''}${placing&&ui.sel?'<button id="unselBtn">やめる</button>':''}${req&&req.back?'<button id="backBtn">← 戻る</button>':''}${req&&req.type==='land'&&req.skip?'<button id="skipBtn">スキップ</button>':''}${req&&req.type==='card'?'<button id="openPick">選ぶ</button>':''}</span></div>`;
+  h+=`<div class="dock"><div class="prompt ${wt?'wait':''}" aria-live="polite">${wt?`<div class="plog"><div class="pt3">${esc(pr)}</div>${G.log.slice(0,3).reverse().map((x,i,a)=>`<div class="pl ${i===a.length-1?'new':''}">${esc(x)}</div>`).join('')}</div>`:`<span>${esc(pr)}</span>`}<span class="row">${placing?`<button id="swapBtn">${ui.swap?'置くに戻す':'入れ替え'}</button>`:''}${placing&&req.tide?'<button id="tideBtn">潮流</button>':''}${placing&&ui.sel?'<button id="unselBtn">やめる</button>':''}${req&&req.back?'<button id="backBtn">← 戻る</button>':''}${req&&req.type==='land'&&req.skip?'<button id="skipBtn">スキップ</button>':''}${req&&req.type==='card'?'<button id="openPick">選ぶ</button>':''}</span></div>`;
   if(ui.info) h+=`<div class="info">${ui.info}<button id="infoClose" class="ix" aria-label="閉じる">×</button></div>`;
   const hcls=c=>[(ui.sel&&ui.sel.id===c.id)||ui.peek===c.id?'sel':'',G.cur===0&&fits(c,0)?'fit':''].join(' ');
   h+=`<div class="fan">${me.hand.map((c,i)=>fanCard(c,i,me.hand.length,hcls(c))).join('')}</div></div>`;
