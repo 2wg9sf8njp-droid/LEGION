@@ -320,6 +320,28 @@ h1{white-space:nowrap}
 .rb{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .rn{font-family:var(--f-disp);font-weight:700;display:flex;gap:6px;align-items:center}
 .rc{display:flex;gap:4px}.rc .gc{width:40px}
+
+.van{position:fixed;z-index:58;pointer-events:none;border-radius:6px;overflow:hidden;animation:vanb var(--d,1.3s) ease-in forwards}
+.van span{position:absolute;inset:0;background:center 8%/cover}
+.van b{position:absolute;left:4px;top:50%;transform:translateY(-50%);font-family:var(--f-num);font-weight:800;color:#fff;background:var(--c3);border-radius:999px;min-width:1.5em;text-align:center;box-shadow:0 0 0 2px #fff}
+.van.burn{box-shadow:0 0 0 2px #ff9a3c,0 0 18px 6px rgba(255,90,30,.85)}
+.van.burn::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(255,80,20,.85),rgba(255,180,60,.2) 60%,transparent);animation:vanf var(--d,1.3s) ease-in forwards}
+.van.back{box-shadow:0 0 0 2px #7fb8ea,0 0 16px 5px rgba(127,184,234,.8)}
+.van.eye{box-shadow:0 0 0 2px #c89cf0,0 0 16px 5px rgba(160,110,230,.85)}
+@keyframes vanb{0%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1.1) rotate(-3deg)}45%{transform:scale(1.1) rotate(3deg)}70%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:translateY(24px) scale(.6);filter:grayscale(1) brightness(.4)}}
+.van.back{animation-name:vanback}
+@keyframes vanback{0%{transform:scale(1)}20%{transform:scale(1.15)}60%{opacity:1}100%{opacity:0;transform:translateY(-40px) scale(.7)}}
+@keyframes vanf{from{opacity:0}to{opacity:1}}
+.vban{position:fixed;left:50%;top:58%;transform:translate(-50%,-50%);z-index:57;pointer-events:none;background:linear-gradient(180deg,rgba(60,20,16,.96),rgba(26,14,14,.96));border:1px solid #ff9a3c;border-radius:12px;padding:10px 14px;
+  display:flex;flex-direction:column;gap:8px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.6);animation:vbin var(--d,1.3s) ease forwards;max-width:92vw}
+.vban.back{background:linear-gradient(180deg,rgba(20,40,64,.96),rgba(14,22,36,.96));border-color:#7fb8ea}
+.vban.eye{background:linear-gradient(180deg,rgba(44,24,66,.96),rgba(20,14,32,.96));border-color:#c89cf0}
+.vban .vt{font-family:var(--f-disp);font-weight:700;color:#ffe2b8;font-size:.95rem}
+.vban .vc{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.vban .vc span{position:relative;width:46px;aspect-ratio:3/4;border-radius:5px;background:center 6%/cover;box-shadow:0 0 0 2px var(--c3)}
+.vban .vc b{position:absolute;left:2px;top:2px;min-width:1.4em;text-align:center;border-radius:999px;font-family:var(--f-num);font-size:.7rem;color:#fff;background:var(--c3)}
+@keyframes vbin{0%{opacity:0;transform:translate(-50%,-40%) scale(.9)}12%{opacity:1;transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.van{animation:none;opacity:.6}}
 @media (prefers-reduced-motion:reduce){.hc.sel,.nat:hover{transform:none}}
 </style>
 
@@ -404,7 +426,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 
 const LIVE=typeof window!=='undefined'&&!globalThis.SIM;
-const GAME='レギオン', VER='v0.3.1';
+const GAME='レギオン', VER='v0.3.2';
 let OPT={speed:'normal',diff:'normal',sound:true};
 try{const o=JSON.parse(localStorage.getItem('hk-opt')||'null'); if(o) OPT={...OPT,...o};}catch(e){}
 const saveOpt=()=>{try{localStorage.setItem('hk-opt',JSON.stringify(OPT))}catch(e){}};
@@ -683,6 +705,24 @@ async function flowerMark(pi,tag,optional){
   pick._x.c.mark=1; log(`${tag}：${pick._x.l.nm}の${cname(pick._x.c)}に花の印（${val(pick._x.c)}として扱う）`);
   if(G.stat) G.stat.ev('fairy_mark');
 }
+
+/* show which cards an effect removes before they disappear */
+async function vanish(cards,label,kind,remote){
+  if(!LIVE||!cards.length) return;
+  if(!remote) netEmit({t:'vanish',cards:cards.map(sc),label,kind});
+  const dur=1300*(SPD[OPT.speed]||1), off=[];
+  for(const c of cards){
+    const el=document.querySelector(`[data-info="${c.id}"],[data-hand="${c.id}"]`); const r=el&&el.getBoundingClientRect();
+    if(!r||!r.width){ off.push(c); continue; }
+    const g=document.createElement('div'); g.className='van '+(kind||'burn'); g.style.cssText=`left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;${cv(c.nat)}`;
+    g.innerHTML=`<span style="background-image:url(${cimg(c)})"></span><b>${nl(c)}</b>`; document.body.appendChild(g);
+    el.style.visibility='hidden'; setTimeout(()=>g.remove(),dur+50); g.style.setProperty('--d',dur+'ms');
+  }
+  const b=document.createElement('div'); b.className='vban '+(kind||'burn');
+  b.innerHTML=`<div class="vt">${esc(label)}</div><div class="vc">${cards.map(c=>`<span style="${cv(c.nat)};background-image:url(${cimg(c)})"><b>${nl(c)}</b></span>`).join('')}</div>`;
+  b.style.setProperty('--d',dur+'ms'); document.body.appendChild(b); setTimeout(()=>b.remove(),dur+300);
+  SFX.fall(); await wait(dur);
+}
 async function onEnter(pi,c,land){
   await fx(c,alive(land)?land:null);
   const P=G.p[pi], o=1-pi, O=G.p[o], n=c.num, nat=c.nat, here=alive(land);
@@ -724,6 +764,7 @@ async function onEnter(pi,c,land){
     if(nat==='dwarf'){ if(here&&land.forge[pi]<3){land.forge[pi]++; log(`${tag}：${land.nm}に鍛え（${land.forge[pi]}）`); if(G.stat) G.stat.ev('dwarf_forge');} return;}
     if(!here||!land.sides[o].length) return log(`${tag}：対象なし`);
     if(!movable(land,o)) return log(`${tag}：相手のカードは動かせない`);
+    await vanish([land.sides[o][land.sides[o].length-1]],`押し返し：${land.nm}から手札へ`,'back');
     const b=land.sides[o].pop(); b.mark=0; b.wild=false; O.hand.push(b); return log(`${tag}：${cname(b)}を相手の手札へ押し返す`);
   }
   if(n===7){
@@ -762,22 +803,25 @@ async function onComplete(pi,c,cs){
     if(nat==='elf'){ log(tag+'：芽吹き'); if(G.stat) G.stat.ev('elf_sprout'); await placeExtra(pi,G.lands,'芽吹き',true); return; }
     const ls=G.lands.filter(l=>l.sides[o].length&&affect(l,o));
     const l=await chooseLand(pi,'殲滅：相手側をすべて墓地に送る土地',ls,x=>threat(x,o)+x.sides[o].length*2,true); if(!l) return log(`${tag}：対象なし`);
+    await vanish(l.sides[o],`殲滅：${l.nm}の${O.name==='あなた'?'あなた':'相手'}側を墓地へ`,'burn');
     const gone=l.sides[o]; l.sides[o]=[]; for(const b of gone){b.mark=0;b.wild=false;} const jk=gone.filter(b=>b.joker); O.hand.push(...jk); O.discard.push(...gone.filter(b=>!b.joker));
     if(G.stat) G.stat.ev('ev6',gone.length); return log(`${tag}：${l.nm}の相手側${gone.length}枚を墓地へ`);
   }
   if(n===8){
     if(nat==='fairy'){ let k=0;
+      await vanish(G.lands.filter(l=>movable(l,o)).flatMap(l=>l.sides[o].filter(x=>x.mark)),'妖精のいたずら：印のカードを手札へ','back');
       for(const l of G.lands){ if(!movable(l,o)) continue; const keep=l.sides[o].filter(x=>!x.mark), back=l.sides[o].filter(x=>x.mark);
         for(const b of back){b.mark=0; O.hand.push(b); k++;} l.sides[o]=keep; }
       if(G.stat&&k) G.stat.ev('fairy_bounce',k); return log(`${tag}：印の付いた${k}枚を相手の手札に押し返す`);}
     if(!O.hand.length) return log(`${tag}：相手の手札がない`);
     const pool=O.hand.filter(x=>!x.joker); if(!pool.length) return log(`${tag}：対象なし`);
     const t=await chooseCard(pi,'看破：数字を選ぶ（その数字のカードをすべて墓地へ）',pool,x=>pool.filter(y=>y.num===x.num).reduce((a,y)=>a+cardValue(o,y)+1,0),false);
-    const hit=O.hand.filter(x=>!x.joker&&x.num===t.num); O.hand=O.hand.filter(x=>!hit.includes(x)); O.discard.push(...hit);
+    const hit=O.hand.filter(x=>!x.joker&&x.num===t.num); await vanish(hit,`看破：手札の${t.num}を${hit.length}枚墓地へ`,'eye'); O.hand=O.hand.filter(x=>!hit.includes(x)); O.discard.push(...hit);
     if(G.stat) G.stat.ev('ev8',hit.length); return log(`${tag}：相手の手札の${t.num}を${hit.length}枚墓地に送らせる`);
   }
   if(n===10){
     if(nat==='dragon'){
+      await vanish(G.lands.filter(l=>l.sides[o].length&&affect(l,o)).map(l=>l.sides[o][l.sides[o].length-1]),'業火：すべての土地の一番上を墓地へ','burn');
       let k=0; for(const l of G.lands){ if(!l.sides[o].length||!affect(l,o)) continue; const b=l.sides[o].pop(); b.mark=0; b.wild=false; if(b.joker) O.hand.push(b); else O.discard.push(b); k++; }
       if(G.stat) G.stat.ev('ev10d',k); return log(`${tag}：業火で相手の${k}か所の一番上を墓地へ`);}
     return;
@@ -940,6 +984,7 @@ function netOnGuest(m){
     render(); return; }
   if(m.t==='fx'){ if(OPT.sound) SFX.ability(); ui.pop={c:m.c}; ui.glow=m.landId; render(); clearTimeout(NET.ft); NET.ft=setTimeout(()=>{ui.pop=null;ui.glow=null;render();},1150*(SPD[OPT.speed]||1)); return; }
   if(m.t==='sfx'){ SFX[m.k]&&SFX[m.k](); return; }
+  if(m.t==='vanish'){ vanish(m.cards,m.label.replace(/あなた側|相手側/,x=>x==='あなた側'?'相手側':'あなた側'),m.kind,true); return; }
   if(m.t==='claim'){ SFX.claim(); const src=document.querySelector(`[data-lid="${m.landId}"] .tile`); const r=src&&src.getBoundingClientRect();
     if(r){ const f=document.createElement('div'); f.className='fly'; f.textContent='+'+m.pts; f.style.left=(r.left+r.width/2)+'px'; f.style.top=(r.top+r.height/3)+'px'; document.body.appendChild(f); setTimeout(()=>f.remove(),1400); } return; }
   if(m.t==='bye'){ netLost(); }
